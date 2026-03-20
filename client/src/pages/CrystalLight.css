@@ -1,0 +1,726 @@
+/* =============================================================
+   LIQUID GLASS LIGHT MODE — Complete Design Override
+   Apple iOS / macOS Design Language
+   Applied to ALL existing components — no features removed
+   ============================================================= */
+
+/* ==================== 1. BASE LANDING PAGE ==================== */
+[data-theme="light"] .landing-page {
+  background: #f1f5f9 !important;
+  position: relative;
+}
+
+/* Ambient iridescent glow behind entire page */
+[data-theme="light"] .landing-page::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(148, 163, 184, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(37, 99, 235, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .landing-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ==================== 2. HERO SECTION ==================== */
+[data-theme="light"] .hero-section {
+  background: transparent;
+}
+
+[data-theme="light"] .hero-gradient-bg {
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(59, 130, 246, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 20%, rgba(148, 163, 184, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.04) 0%, transparent 50%);
+  opacity: 0.8;
+}
+
+[data-theme="light"] .hero-glow-ambient {
+  background: radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+}
+
+[data-theme="light"] .hero-title {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background: none !important;
+}
+
+[data-theme="light"] .hero-title-gold {
+  background: linear-gradient(135deg, #b8941f, #D4AF37) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+[data-theme="light"] .hero-subtitle {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .hero-badge {
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-bottom-color: rgba(255,255,255,0.3);
+  border-right-color: rgba(255,255,255,0.3);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  color: #0f172a;
+}
+
+[data-theme="light"] .hero-metrics {
+  border-top-color: rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .hero-metric-value {
+  color: #0f172a;
+  -webkit-text-fill-color: #0f172a;
+  background: none;
+}
+
+[data-theme="light"] .hero-metric-label {
+  color: #475569;
+}
+
+/* Hero Buttons - Liquid Glass */
+[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, #D4AF37, #b8941f) !important;
+  color: #fff !important;
+  border: none;
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.25);
+}
+
+[data-theme="light"] .btn-primary:hover {
+  box-shadow: 0 12px 36px rgba(212, 175, 55, 0.35);
+}
+
+[data-theme="light"] .btn-secondary {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.8) !important;
+  border-bottom-color: rgba(255,255,255,0.3) !important;
+  border-right-color: rgba(255,255,255,0.3) !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(255,255,255,0.7) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.06);
+  border-color: rgba(255,255,255,0.9) !important;
+}
+
+/* Hero Phone Mockup - Frosted Glass */
+[data-theme="light"] .hero-phone-mockup {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.6) 0%,
+    rgba(255,255,255,0.3) 100%
+  ) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255,255,255,0.8) !important;
+  border-left: 1px solid rgba(255,255,255,0.8) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+  border-right: 1px solid rgba(255,255,255,0.3) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.2) !important;
+  border-radius: 24px !important;
+}
+
+[data-theme="light"] .phone-screen {
+  background: rgba(255,255,255,0.3) !important;
+}
+
+[data-theme="light"] .phone-header h4 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .phone-header p {
+  color: #475569;
+}
+
+[data-theme="light"] .phone-bus-item {
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 12px;
+}
+
+[data-theme="light"] .phone-bus-num {
+  color: #0f172a;
+}
+
+[data-theme="light"] .phone-bus-route {
+  color: #475569;
+}
+
+[data-theme="light"] .phone-status-bar {
+  color: #0f172a;
+}
+
+/* ==================== 3. UNIVERSAL GLASS CARD OVERRIDE ==================== */
+[data-theme="light"] .glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.2) 100%
+  ) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.05) !important;
+  border-radius: 24px !important;
+  color: #0f172a !important;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+[data-theme="light"] .glass-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 24px 60px rgba(15, 23, 42, 0.12),
+    0 8px 16px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+[data-theme="light"] .glass-card::before {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent) !important;
+}
+
+[data-theme="light"] .glass-card::after {
+  background: none !important;
+}
+
+/* ==================== 4. STATS SECTION ==================== */
+[data-theme="light"] .stats-section {
+  background: transparent;
+}
+
+[data-theme="light"] .stats-bg-glow {
+  background: radial-gradient(ellipse, rgba(0, 255, 255, 0.04) 0%, transparent 70%);
+}
+
+[data-theme="light"] .stat-icon {
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+[data-theme="light"] .stat-value {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background: none !important;
+}
+
+[data-theme="light"] .stat-label {
+  color: #475569 !important;
+}
+
+/* ==================== 5. FEATURES SECTION ==================== */
+[data-theme="light"] .features-section {
+  background: transparent;
+}
+
+[data-theme="light"] .feature-icon {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border-radius: 16px;
+}
+
+[data-theme="light"] .feature-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .feature-desc {
+  color: #475569 !important;
+}
+
+/* ==================== 6. HOW IT WORKS SECTION ==================== */
+[data-theme="light"] .hiw-section {
+  background: transparent;
+}
+
+[data-theme="light"] .hiw-timeline::before {
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), var(--gold-dark), rgba(212, 175, 55, 0.2), transparent) !important;
+}
+
+[data-theme="light"] .hiw-step-number {
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.8);
+  color: #0f172a;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .hiw-step-card h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .hiw-step-card p {
+  color: #475569 !important;
+}
+
+/* ==================== 7. ACHIEVEMENTS SECTION ==================== */
+[data-theme="light"] .achievements-section {
+  background: transparent;
+}
+
+[data-theme="light"] .achievement-icon {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+[data-theme="light"] .achievement-card h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .achievement-card p {
+  color: #475569 !important;
+}
+
+/* ==================== 8. TESTIMONIALS SECTION ==================== */
+[data-theme="light"] .testimonials-section {
+  background: transparent;
+}
+
+[data-theme="light"] .testimonial-text {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .testimonial-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .testimonial-role {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .testimonial-avatar {
+  background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2)) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .testimonial-stars {
+  color: #D4AF37;
+}
+
+/* ==================== 9. GALLERY SECTION ==================== */
+[data-theme="light"] .gallery-section {
+  background: transparent;
+}
+
+[data-theme="light"] .gallery-section .section-title {
+  color: #0f172a;
+  -webkit-text-fill-color: #0f172a;
+  background: none;
+}
+
+/* ==================== 10. CONTACT SECTION ==================== */
+[data-theme="light"] .contact-section {
+  background: transparent;
+}
+
+[data-theme="light"] .contact-detail-label {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .contact-detail-value {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .contact-icon {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+[data-theme="light"] .contact-socials {
+  border-top-color: rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] .contact-social {
+  color: #475569 !important;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+[data-theme="light"] .contact-social:hover {
+  color: #0f172a !important;
+  background: rgba(255,255,255,0.7);
+}
+
+/* ==================== 11. SECTION TITLES & BADGES ==================== */
+[data-theme="light"] .section-title {
+  background: none !important;
+  -webkit-text-fill-color: #0f172a !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .section-subtitle {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .section-badge {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.8) !important;
+  border-bottom-color: rgba(255,255,255,0.3) !important;
+  border-right-color: rgba(255,255,255,0.3) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  color: #0f172a !important;
+}
+
+/* ==================== 12. NAVBAR OVERRIDES (Liquid Glass — White + Blue) ==================== */
+/* These are intentionally minimal — the main Navbar.css now handles 
+   the full light/dark theming with the liquid glass capsule design. 
+   Only add supplementary overrides here for the CrystalLight landing page context. */
+
+/* ==================== 13. PROFILE DROPDOWN ==================== */
+/* Profile dropdown styling is now handled in Navbar.css */
+
+/* ==================== 14. FOOTER ==================== */
+[data-theme="light"] .footer {
+  background: linear-gradient(180deg, transparent, rgba(248,249,250,1)) !important;
+  border-top-color: rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .footer-glow {
+  background: radial-gradient(ellipse, rgba(0, 255, 255, 0.03) 0%, transparent 70%) !important;
+}
+
+[data-theme="light"] .footer-grid {
+  border-bottom-color: rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] .footer-logo {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .footer-description {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .footer-social-link {
+  background: rgba(255,255,255,0.4) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .footer-social-link:hover {
+  background: rgba(255,255,255,0.7) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .footer-links-group h4 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .footer-links-group a {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .footer-links-group a:hover {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .footer-bottom p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .india-badge {
+  background: rgba(255,255,255,0.4) !important;
+  border-color: rgba(255,255,255,0.6) !important;
+}
+
+[data-theme="light"] .india-text {
+  color: #475569 !important;
+}
+
+/* ==================== 15. DASHBOARD ==================== */
+[data-theme="light"] .dashboard-page {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .dashboard-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .dashboard-status {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6) !important;
+}
+
+[data-theme="light"] .dashboard-tabs {
+  background: rgba(255,255,255,0.4) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  border-radius: 16px;
+}
+
+[data-theme="light"] .tab-btn {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .tab-btn.active {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .tab-pill-bg {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .search-bar .form-input {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.7) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bus-number-badge {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .route-point {
+  color: #0f172a !important;
+}
+
+/* Booking & Map Modals */
+[data-theme="light"] .booking-modal-overlay,
+[data-theme="light"] .map-overlay {
+  background: rgba(248,249,250,0.6) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+[data-theme="light"] .booking-modal-card,
+[data-theme="light"] .map-modal-container {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.7) 0%,
+    rgba(255,255,255,0.4) 100%
+  ) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-top: 1px solid rgba(255,255,255,0.8) !important;
+  border-left: 1px solid rgba(255,255,255,0.8) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+  border-right: 1px solid rgba(255,255,255,0.3) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08) !important;
+  border-radius: 24px !important;
+}
+
+[data-theme="light"] .booking-modal-header,
+[data-theme="light"] .map-modal-header {
+  background: rgba(255,255,255,0.3) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .booking-modal-header h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .booking-modal-header p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .booking-modal-footer,
+[data-theme="light"] .map-modal-footer {
+  background: rgba(255,255,255,0.3) !important;
+  border-top: 1px solid rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .passenger-row {
+  background: rgba(255,255,255,0.4) !important;
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  border-radius: 16px;
+}
+
+[data-theme="light"] .passenger-inputs input,
+[data-theme="light"] .passenger-inputs select {
+  background: rgba(255,255,255,0.5) !important;
+  border: 1px solid rgba(255,255,255,0.7) !important;
+  color: #0f172a !important;
+}
+
+/* ==================== 16. CONDUCTOR DASHBOARD ==================== */
+[data-theme="light"] .conductor-seats-control {
+  background: rgba(255,255,255,0.3) !important;
+  border: 1px solid rgba(255,255,255,0.5) !important;
+  border-radius: 16px;
+}
+
+[data-theme="light"] .conductor-seats-control label {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .seat-count {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bookings-table th {
+  color: #475569 !important;
+  border-bottom-color: rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .bookings-table td {
+  background: rgba(255,255,255,0.3) !important;
+  color: #0f172a !important;
+}
+
+/* ==================== 17. AUTH PAGES ==================== */
+[data-theme="light"] .auth-page {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .auth-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.2) 100%
+  ) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-top: 1px solid rgba(255,255,255,0.8) !important;
+  border-left: 1px solid rgba(255,255,255,0.8) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+  border-right: 1px solid rgba(255,255,255,0.3) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.05) !important;
+  border-radius: 24px !important;
+}
+
+[data-theme="light"] .auth-card h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .auth-card p {
+  color: #475569 !important;
+}
+
+/* ==================== 18. FORM INPUTS (GLOBAL) ==================== */
+[data-theme="light"] .form-input {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255,255,255,0.7) !important;
+  border-top-color: rgba(255,255,255,0.9) !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border-radius: 14px;
+}
+
+[data-theme="light"] .form-input:focus {
+  border-color: rgba(212, 175, 55, 0.4) !important;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.08), 0 4px 12px rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .form-input::placeholder {
+  color: #aaa !important;
+}
+
+/* ==================== 19. SCROLLBAR ==================== */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12) !important;
+  border-radius: 10px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2) !important;
+}
+
+/* ==================== 20. TOASTS ==================== */
+[data-theme="light"] .toast,
+[data-theme="light"] .booking-toast {
+  backdrop-filter: blur(16px) !important;
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .toast-success {
+  background: rgba(0, 200, 83, 0.08) !important;
+  border-color: rgba(0, 200, 83, 0.2) !important;
+  color: #00a844 !important;
+}
+
+[data-theme="light"] .toast-error {
+  background: rgba(255, 68, 68, 0.08) !important;
+  border-color: rgba(255, 68, 68, 0.2) !important;
+  color: #e53e3e !important;
+}
+
+/* ==================== 21. THEME TOGGLE SWITCH ==================== */
+[data-theme="light"] .theme-toggle-track {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.6) 0%,
+    rgba(255,255,255,0.3) 100%
+  ) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.8) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
+}
+
+/* ==================== 22. LIQUID GLASS PANEL ==================== */
+[data-theme="light"] .glass-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.2) 100%
+  ) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.05) !important;
+  border-radius: 24px !important;
+}
+
+[data-theme="light"] .glass-panel::before {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent) !important;
+}
+
+/* ==================== 23. GLOBAL TEXT OVERRIDES ==================== */
+[data-theme="light"] .text-gold {
+  color: #b8941f !important;
+}
+
+[data-theme="light"] .text-muted {
+  color: #475569 !important;
+}
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3 {
+  color: #0f172a;
+}

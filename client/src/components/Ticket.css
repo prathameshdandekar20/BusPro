@@ -1,0 +1,550 @@
+.ticket-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 10002;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  /* CRITICAL: allows top spacing to exist on scroll */
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.ticket-container {
+  margin: 120px auto 60px auto !important;
+  /* Hard-locked 120px top margin to push it DOWN from browser search bar */
+  flex-shrink: 0 !important;
+  background: white;
+  width: 100%;
+  max-width: 900px;
+  height: 90vh;
+  /* Fixed height for modal preview */
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Header is fixed, body scrolls */
+}
+
+.ticket-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  background: #f0f2f5;
+  padding: 30px 0;
+  scroll-behavior: smooth;
+}
+
+.ticket-controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  z-index: 20;
+}
+
+.btn-print-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a73e8;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+}
+
+.btn-print-action:hover {
+  background: #1557b0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 115, 232, 0.3);
+}
+
+.btn-close-ticket {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #3c4043;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-close-ticket:hover {
+  background: #e8eaed;
+  color: #202124;
+}
+
+/* Main Ticket Body Formatting */
+.printable-ticket {
+  padding: 0;
+  color: #000;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #fff;
+}
+
+.ticket-page {
+  padding: 60px 50px;
+  min-height: 1120px;
+  /* Closer to A4 ratio */
+  position: relative;
+  background: white;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Add a subtle page separation in preview */
+.ticket-page:not(:last-child) {
+  border-bottom: 2px dashed #eee;
+}
+
+/* National Pride Header */
+.national-pride-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 2px solid #000;
+  padding: 10px 0 15px 0;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.azadi-badge-img {
+  flex: 0 0 120px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.azadi-badge-img img {
+  height: 75px;
+  width: auto;
+  object-fit: contain;
+}
+
+.india-crest-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.morth-logo-img {
+  height: 95px;
+  width: auto;
+  margin-bottom: 5px;
+  object-fit: contain;
+}
+
+.goi-text {
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.ministry-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.g20-badge-img {
+  flex: 0 0 120px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.g20-badge-img img {
+  height: 85px;
+  width: auto;
+  object-fit: contain;
+}
+
+.pride-slogan {
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-top: 1px solid #ccc;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+
+
+.ers-main-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.ers-main-title h1 {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 0;
+  text-decoration: underline;
+}
+
+.ers-main-title p {
+  font-size: 0.75rem;
+  margin: 5px 0;
+  font-weight: 700;
+  color: #d32f2f;
+}
+
+.ticket-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  background: #f9f9f9;
+  border: 1px solid #333;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.info-line {
+  font-size: 0.85rem;
+  margin: 4px 0;
+}
+
+.pnr-text {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #d32f2f;
+}
+
+.status-conf {
+  color: #1b5e20;
+  font-weight: 900;
+}
+
+.journey-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  background: #333;
+  color: white;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.j-point {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.j-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.j-city {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.j-arrow {
+  font-size: 1.5rem;
+}
+
+.ticket-table-section {
+  margin-bottom: 20px;
+}
+
+.table-header-title {
+  background: #666;
+  color: white;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.passenger-table-official {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.passenger-table-official th {
+  background: #eee;
+  border: 1px solid #333;
+  padding: 8px;
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+.passenger-table-official td {
+  border: 1px solid #333;
+  padding: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.p-name-main {
+  text-transform: uppercase;
+}
+
+.status-cell {
+  color: #1b5e20;
+}
+
+.fare-official-box {
+  border: 1px solid #333;
+  padding: 12px;
+}
+
+.fare-main-line {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.fare-price {
+  font-size: 1.3rem;
+  color: #000;
+}
+
+.fare-words {
+  font-size: 0.75rem;
+  margin-top: 5px;
+  border-top: 1px dashed #ccc;
+  padding-top: 5px;
+}
+
+.notes-content {
+  border: 1px solid #333;
+  padding: 12px;
+}
+
+.notes-content p {
+  font-size: 0.75rem;
+  margin: 4px 0;
+  font-weight: 600;
+}
+
+.ticket-page-1-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 20px;
+  border-top: 1px solid #000;
+  padding-top: 15px;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-box-official {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #000;
+  background: repeating-linear-gradient(45deg, #000, #000 2px, #fff 2px, #fff 4px);
+}
+
+.qr-txt {
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.footer-right {
+  text-align: right;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.pride-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 5rem;
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.03);
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+
+/* Page 2 Specific */
+.page-divider {
+  height: 10px;
+  background: #eee;
+  margin: 40px 0;
+  border-top: 1px dashed #ccc;
+  border-bottom: 1px dashed #ccc;
+}
+
+.tc-header {
+  border-bottom: 2px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.tc-header h3 {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.tc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.tc-section h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 5px;
+}
+
+.tc-section p {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.india-footer-mark {
+  margin-top: auto;
+  padding-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.swachh-bharat-official img {
+  height: 120px;
+  width: auto;
+}
+
+/* PRINT MEDIA QUERY */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-ticket,
+  #printable-ticket * {
+    visibility: visible;
+  }
+
+  #printable-ticket {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 210mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .ticket-scroll-area {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .ticket-page {
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    padding: 15mm !important;
+    margin: 0 !important;
+    border: none !important;
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+    box-shadow: none;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .page-2 {
+    page-break-after: avoid;
+    break-after: unset;
+  }
+
+  .ticket-controls-header,
+  .page-divider,
+  .no-print,
+  .btn-close-ticket {
+    display: none !important;
+  }
+
+  .ticket-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    background: white !important;
+    padding: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .ticket-container {
+    box-shadow: none !important;
+    max-width: none !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .ticket-page {
+    padding: 20px;
+  }
+
+  .ticket-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
