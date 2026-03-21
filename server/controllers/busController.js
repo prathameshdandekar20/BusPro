@@ -79,6 +79,9 @@ const createBus = async (req, res) => {
     });
 
     res.status(201).json(bus);
+
+    const io = req.app.get('io');
+    if (io) io.emit('busUpdate', bus);
   } catch (error) {
     console.error('Create bus error:', error);
     res.status(500).json({ message: 'Server error creating bus' });
@@ -126,6 +129,7 @@ const updateSeats = async (req, res) => {
         availableSeats: bus.availableSeats,
         totalSeats: bus.totalSeats,
       });
+      io.emit('busUpdate', bus);
     }
 
     res.json(bus);
@@ -161,7 +165,7 @@ const updateLocation = async (req, res) => {
     bus.location = { latitude, longitude };
     await bus.save();
 
-    // Emit socket event for real-time location update
+    // Emit socket events
     const io = req.app.get('io');
     if (io) {
       io.emit('locationUpdate', {
@@ -169,6 +173,7 @@ const updateLocation = async (req, res) => {
         busNumber: bus.busNumber,
         location: bus.location,
       });
+      io.emit('busUpdate', bus);
     }
 
     res.json(bus);
@@ -212,6 +217,7 @@ const startTrip = async (req, res) => {
         source: bus.source,
         destination: bus.destination,
       });
+      io.emit('busUpdate', bus);
     }
 
     res.json({ message: 'Trip started successfully', bus });
@@ -249,6 +255,7 @@ const endTrip = async (req, res) => {
         busId: bus._id,
         busNumber: bus.busNumber,
       });
+      io.emit('busUpdate', bus);
     }
 
     res.json({ message: 'Trip ended successfully', bus });
@@ -284,6 +291,9 @@ const updateBusRoute = async (req, res) => {
     bus.routePoints = routePoints;
     await bus.save();
 
+    const io = req.app.get('io');
+    if (io) io.emit('busUpdate', bus);
+
     res.json({ message: 'Route updated successfully', bus });
   } catch (error) {
     console.error('Update route error:', error);
@@ -314,26 +324,126 @@ const updateImage = async (req, res) => {
       bus.conductorId = req.user._id;
     }
 
-    bus.image = image;
+    if (!bus.images) bus.images = [];
+    bus.images.push(image);
     await bus.save();
 
-    // Emit socket event for real-time image update
     const io = req.app.get('io');
-    if (io) {
-      io.emit('imageUpdate', {
-        busId: bus._id,
-        busNumber: bus.busNumber,
-        image: bus.image,
-      });
-    }
+    if (io) io.emit('busUpdate', bus);
 
-    res.json({ message: 'Image updated successfully', bus });
+    res.json({ message: 'Image added successfully', images: bus.images });
   } catch (error) {
     console.error('Update image error:', error);
     res.status(500).json({ message: 'Server error updating image' });
   }
 };
 
+// @desc    Rate a bus
+// @route   POST /api/buses/rate
+const rateBus = async (req, res) => {
+  try {
+    const { busId, rating, review } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    const bus = await Bus.findById(busId);
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found' });
+    }
+
+    // Check if user already rated this bus
+    const existingIdx = bus.ratings.findIndex(
+      (r) => r.userId && r.userId.toString() === req.user._id.toString()
+    );
+
+    if (existingIdx >= 0) {
+      bus.ratings[existingIdx].rating = rating;
+      if (review !== undefined) bus.ratings[existingIdx].review = review;
+      bus.ratings[existingIdx].createdAt = new Date();
+    } else {
+      bus.ratings.push({ userId: req.user._id, rating, review: review || '' });
+    }
+
+    // Recalculate average
+    const total = bus.ratings.reduce((sum, r) => sum + r.rating, 0);
+    bus.avgRating = Math.round((total / bus.ratings.length) * 10) / 10;
+    bus.totalRatings = bus.ratings.length;
+
+    await bus.save();
+    
+    const io = req.app.get('io');
+    if (io) io.emit('busUpdate', bus);
+
+    res.json({ message: 'Rating submitted', avgRating: bus.avgRating, totalRatings: bus.totalRatings });
+  } catch (error) {
+    console.error('Rate bus error:', error);
+    res.status(500).json({ message: 'Server error rating bus' });
+  }
+};
+// @desc    Reply to a review (Conductor only)
+// @route   POST /api/buses/reply
+const replyToReview = async (req, res) => {
+  try {
+    const { busId, reviewId, replyText } = req.body;
+    
+    const bus = await Bus.findById(busId);
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+
+    // Check ownership
+    const isOwner = bus.conductorId && bus.conductorId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to reply' });
+    }
+
+    const reviewObj = bus.ratings.id(reviewId);
+    if (!reviewObj) return res.status(404).json({ message: 'Review not found' });
+
+    reviewObj.conductorReply = replyText;
+    await bus.save();
+
+    const io = req.app.get('io');
+    if (io) io.emit('busUpdate', bus);
+
+    res.json({ message: 'Reply added successfully', ratings: bus.ratings });
+  } catch (error) {
+    console.error('Reply to review error:', error);
+    res.status(500).json({ message: 'Server error replying to review' });
+  }
+};
+
+// @desc    Delete a specific image from bus
+// @route   POST /api/buses/deleteImage
+const deleteImage = async (req, res) => {
+  try {
+    const { busId, imageIndex } = req.body;
+    
+    const bus = await Bus.findById(busId);
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+
+    // Check ownership
+    const isOwner = bus.conductorId && bus.conductorId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    if (imageIndex >= 0 && imageIndex < bus.images.length) {
+      bus.images.splice(imageIndex, 1);
+      await bus.save();
+    }
+
+    const io = req.app.get('io');
+    if (io) io.emit('busUpdate', bus);
+
+    res.json({ message: 'Image deleted', images: bus.images });
+  } catch (error) {
+    console.error('Delete image error:', error);
+    res.status(500).json({ message: 'Server error deleting image' });
+  }
+};
 // @desc    Delete a bus
 // @route   DELETE /api/buses/:id
 const deleteBus = async (req, res) => {
@@ -351,11 +461,61 @@ const deleteBus = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to delete this bus' });
     }
 
-    await Bus.findByIdAndDelete(req.params.id);
+    const busId = req.params.id;
+    await Bus.findByIdAndDelete(busId);
+    
+    const io = req.app.get('io');
+    if (io) io.emit('busDeleted', busId);
+
     res.json({ message: 'Bus deleted successfully' });
   } catch (error) {
     console.error('Delete bus error:', error);
     res.status(500).json({ message: 'Server error deleting bus' });
+  }
+};
+
+// @desc    Delete a review / rating
+// @route   POST /api/buses/deleteReview
+const deleteReview = async (req, res) => {
+  try {
+    const { busId, reviewId } = req.body;
+    
+    const bus = await Bus.findById(busId);
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+
+    const reviewObj = bus.ratings.id(reviewId);
+    if (!reviewObj) return res.status(404).json({ message: 'Review not found' });
+
+    // Check authorization: Owner of bus (Conductor), Admin, or the user who wrote the review
+    const isBusOwner = bus.conductorId && bus.conductorId.toString() === req.user._id.toString();
+    const isReviewOwner = reviewObj.userId && reviewObj.userId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isBusOwner && !isReviewOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to delete this review' });
+    }
+
+    // Use pull to remove subdocument
+    bus.ratings.pull(reviewId);
+
+    // Recalculate average
+    if (bus.ratings.length > 0) {
+      const total = bus.ratings.reduce((sum, r) => sum + r.rating, 0);
+      bus.avgRating = Math.round((total / bus.ratings.length) * 10) / 10;
+    } else {
+      bus.avgRating = 0;
+    }
+    bus.totalRatings = bus.ratings.length;
+
+    await bus.save();
+    
+    const io = req.app.get('io');
+    if (io) io.emit('busUpdate', bus);
+
+    res.json({ message: 'Review deleted successfully', avgRating: bus.avgRating, totalRatings: bus.totalRatings, ratings: bus.ratings });
+  } catch (error) {
+    console.error('Delete review error:', error);
+    res.status(500).json({ message: 'Server error deleting review' });
   }
 };
 
@@ -367,6 +527,10 @@ module.exports = {
   updateLocation,
   updateBusRoute,
   updateImage,
+  deleteImage,
+  rateBus,
+  replyToReview,
+  deleteReview,
   startTrip,
   endTrip,
   deleteBus,

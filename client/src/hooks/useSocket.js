@@ -5,6 +5,9 @@ export const useSocket = () => {
   const [connected, setConnected] = useState(false);
   const [seatUpdates, setSeatUpdates] = useState(null);
   const [locationUpdates, setLocationUpdates] = useState(null);
+  const [busUpdates, setBusUpdates] = useState(null);
+  const [busDeleted, setBusDeleted] = useState(null);
+  const [newBooking, setNewBooking] = useState(null);
 
   useEffect(() => {
     const socket = socketService.connect();
@@ -18,6 +21,18 @@ export const useSocket = () => {
 
     socketService.onLocationUpdate((data) => {
       setLocationUpdates(data);
+    });
+
+    socketService.onBusUpdate((data) => {
+      setBusUpdates(data);
+    });
+
+    socketService.onBusDeleted((id) => {
+      setBusDeleted(id);
+    });
+
+    socketService.onNewBooking((data) => {
+      setNewBooking(data);
     });
 
     return () => {
@@ -37,6 +52,9 @@ export const useSocket = () => {
     connected,
     seatUpdates,
     locationUpdates,
+    busUpdates,
+    busDeleted,
+    newBooking,
     joinBusRoom,
     leaveBusRoom,
   };

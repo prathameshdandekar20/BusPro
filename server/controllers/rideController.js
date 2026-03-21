@@ -33,7 +33,7 @@ const bookRide = async (req, res) => {
     bus.availableSeats -= seatsToBook;
     await bus.save();
 
-    // Emit real-time seat update
+    // Emit real-time updates
     const io = req.app.get('io');
     if (io) {
       io.emit('seatUpdate', {
@@ -42,11 +42,16 @@ const bookRide = async (req, res) => {
         availableSeats: bus.availableSeats,
         totalSeats: bus.totalSeats,
       });
+      io.emit('busUpdate', bus); // Broad broadcast for detail modals
     }
 
     const populatedRide = await Ride.findById(ride._id)
       .populate('busId', 'busNumber source destination fare')
       .populate('userId', 'name email avatar');
+
+    if (io) {
+      io.emit('newBooking', populatedRide);
+    }
 
     res.status(201).json(populatedRide);
   } catch (error) {
@@ -116,6 +121,7 @@ const cancelRide = async (req, res) => {
           availableSeats: bus.availableSeats,
           totalSeats: bus.totalSeats,
         });
+        io.emit('busUpdate', bus);
       }
     }
 

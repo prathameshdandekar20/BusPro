@@ -8,7 +8,7 @@ export const socketService = {
   connect: () => {
     if (!socket) {
       socket = io(SOCKET_URL, {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'],
         autoConnect: true,
       });
 
@@ -60,6 +60,14 @@ export const socketService = {
     if (socket) socket.on('tripEnded', callback);
   },
 
+  onBusUpdate: (callback) => {
+    if (socket) socket.on('busUpdate', callback);
+  },
+
+  onBusDeleted: (callback) => {
+    if (socket) socket.on('busDeleted', callback);
+  },
+
   onNewBooking: (callback) => {
     if (socket) socket.on('newBooking', callback);
   },
@@ -79,6 +87,8 @@ export const socketService = {
       socket.off('tripStarted');
       socket.off('tripEnded');
       socket.off('newBooking');
+      socket.off('busUpdate');
+      socket.off('busDeleted');
     }
   },
 };

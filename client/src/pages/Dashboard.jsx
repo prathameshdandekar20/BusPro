@@ -14,12 +14,16 @@ const Dashboard = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('buses');
   const [hoveredTab, setHoveredTab] = useState(null);
+  const [selectedBusDetails, setSelectedBusDetails] = useState(null);
   const [searchSource, setSearchSource] = useState('');
   const [searchDest, setSearchDest] = useState('');
   const [bookingMsg, setBookingMsg] = useState('');
   const [distanceKm, setDistanceKm] = useState(0);
   const [calculatingFare, setCalculatingFare] = useState(false);
   const [stashedBus, setStashedBus] = useState(null); // For auto-restoring modal
+  const [reviewInput, setReviewInput] = useState('');
+  const [ratingInput, setRatingInput] = useState(0);
+  const [selectedImgIdx, setSelectedImgIdx] = useState(0);
   
   // Real-time states
   const [showMap, setShowMap] = useState(false);
@@ -35,7 +39,7 @@ const Dashboard = ({ user }) => {
   const [selectedRideForTicket, setSelectedRideForTicket] = useState(null);
   const [pickingMode, setPickingMode] = useState(null); // 'boarding' | 'dropping' | null
 
-  const { seatUpdates, locationUpdates } = useSocket();
+  const { seatUpdates, locationUpdates, busUpdates, busDeleted, newBooking } = useSocket();
 
   useEffect(() => {
     fetchData();
@@ -45,41 +49,145 @@ const Dashboard = ({ user }) => {
     };
   }, []);
 
+  // Reset image index when opening a new bus
+  useEffect(() => {
+    setSelectedImgIdx(0);
+    // Initialize ratingInput/reviewInput from existing rating if present
+    if (selectedBusDetails && user) {
+       const userRating = selectedBusDetails.ratings?.find(r => (r.userId?._id || r.userId) === user._id);
+       setRatingInput(userRating?.rating || 0);
+       setReviewInput(userRating?.review || '');
+    }
+    if (selectedBusDetails?.images?.length > 1) {
+      const interval = setInterval(() => {
+        setSelectedImgIdx(prev => (prev + 1) % selectedBusDetails.images.length);
+      }, 4000); // 4 seconds
+      return () => clearInterval(interval);
+    }
+  }, [selectedBusDetails, user]);
+
+  const handleRateSubmit = async () => {
+    if (ratingInput < 1) {
+      setBookingMsg('Please select at least 1 star');
+      return;
+    }
+    try {
+      const res = await busService.rateBus(selectedBusDetails._id, ratingInput, reviewInput);
+      setSelectedBusDetails(prev => ({
+        ...prev,
+        avgRating: res.avgRating,
+        totalRatings: res.totalRatings,
+        ratings: [...(prev.ratings || []).filter(r => (r.userId?._id || r.userId) !== user?._id), { userId: user, rating: ratingInput, review: reviewInput, createdAt: new Date() }]
+      }));
+      setBuses(prev => prev.map(b => b._id === selectedBusDetails._id ? { ...b, avgRating: res.avgRating, totalRatings: res.totalRatings } : b));
+      setBookingMsg('⭐ Review submitted!');
+      setTimeout(() => setBookingMsg(''), 2000);
+    } catch (err) {
+      setBookingMsg('Failed to submit review');
+      setTimeout(() => setBookingMsg(''), 3000);
+    }
+  };
+
+  const handleDeleteReview = async (busId, reviewId) => {
+    if (!window.confirm('Are you sure you want to delete your review?')) return;
+    try {
+      const res = await busService.deleteReview(busId, reviewId);
+      setSelectedBusDetails(prev => ({
+        ...prev,
+        avgRating: res.avgRating,
+        totalRatings: res.totalRatings,
+        ratings: (prev.ratings || []).filter(r => r._id !== reviewId)
+      }));
+      setBuses(prev => prev.map(b => b._id === busId ? { ...b, avgRating: res.avgRating, totalRatings: res.totalRatings } : b));
+      setRatingInput(0);
+      setReviewInput('');
+      setBookingMsg('Review deleted');
+      setTimeout(() => setBookingMsg(''), 2000);
+    } catch (err) {
+      setBookingMsg('Failed to delete review');
+    }
+  };
+
   // Prevent background scrolling when any modal is open
   useEffect(() => {
-    if (showMap || bookingBus || showTicket || pickingMode) {
+    if (showMap || bookingBus || showTicket || pickingMode || selectedBusDetails) {
       document.body.style.overflow = 'hidden';
       document.body.classList.add('modal-active');
     } else {
       document.body.style.overflow = '';
       document.body.classList.remove('modal-active');
     }
-  }, [showMap, bookingBus, showTicket, pickingMode]);
+  }, [showMap, bookingBus, showTicket, pickingMode, selectedBusDetails]);
 
   // Update buses with live location and seats from socket
   useEffect(() => {
     if (seatUpdates) {
-      setBuses(prev => prev.map(b =>
+      setBuses(prev => (prev || []).map(b =>
         b._id === seatUpdates.busId
           ? { ...b, availableSeats: seatUpdates.availableSeats }
           : b
       ));
+      if (selectedBusDetails?._id === seatUpdates.busId) {
+        setSelectedBusDetails(prev => (prev ? { ...prev, ...seatUpdates } : null));
+      }
     }
-  }, [seatUpdates]);
+  }, [seatUpdates, selectedBusDetails]);
 
   useEffect(() => {
     if (locationUpdates) {
-      setBuses(prev => prev.map(b =>
+      setBuses(prev => (prev || []).map(b =>
         b._id === locationUpdates.busId
           ? { ...b, location: locationUpdates.location }
           : b
       ));
-      // Also update selected bus if it matches
       if (selectedBus?._id === locationUpdates.busId) {
-        setSelectedBus(prev => ({ ...prev, location: locationUpdates.location }));
+        setSelectedBus(prev => (prev ? { ...prev, location: locationUpdates.location } : null));
+      }
+      if (selectedBusDetails?._id === locationUpdates.busId) {
+        setSelectedBusDetails(prev => (prev ? { ...prev, location: locationUpdates.location } : null));
       }
     }
-  }, [locationUpdates, selectedBus]);
+  }, [locationUpdates, selectedBus, selectedBusDetails]);
+
+  useEffect(() => {
+    if (busUpdates) {
+      setBuses(prev => {
+        if (!prev) return [];
+        const index = prev.findIndex(b => b._id === busUpdates._id);
+        if (index !== -1) {
+          return prev.map((b, i) => i === index ? { ...b, ...busUpdates } : b);
+        } else {
+          if (busUpdates.isActive) return [busUpdates, ...prev];
+          return prev;
+        }
+      });
+      if (selectedBusDetails?._id === busUpdates._id) {
+        setSelectedBusDetails(prev => (prev ? { ...prev, ...busUpdates } : null));
+      }
+      if (bookingBus?._id === busUpdates._id) {
+        setBookingBus(prev => (prev ? { ...prev, ...busUpdates } : null));
+      }
+    }
+  }, [busUpdates, selectedBusDetails, bookingBus]);
+
+  useEffect(() => {
+    if (busDeleted) {
+      setBuses(prev => (prev || []).filter(b => b._id !== busDeleted));
+      if (selectedBusDetails?._id === busDeleted) setSelectedBusDetails(null);
+      if (bookingBus?._id === busDeleted) setBookingBus(null);
+    }
+  }, [busDeleted, selectedBusDetails, bookingBus]);
+
+  useEffect(() => {
+    if (newBooking) {
+      const busId = newBooking.busId?._id || newBooking.busId;
+      setBuses(prev => (prev || []).map(b => 
+        b._id === busId
+          ? { ...b, availableSeats: Math.max(0, b.availableSeats - (newBooking.numberOfSeats || 1)) }
+          : b
+      ));
+    }
+  }, [newBooking]);
 
 
   const fetchData = async () => {
@@ -416,52 +524,62 @@ const Dashboard = ({ user }) => {
                 filteredBuses.map((bus) => (
                   <motion.div key={bus._id} variants={staggerItem} className="gpu-accel">
                     <GlassCard className="bus-card gpu-accel" variant="plain">
-                      <div className="bus-card-header">
-                        <div className="bus-number-badge">{bus.busNumber}</div>
-                        <div className={`bus-status-tag ${bus.isActive ? 'active' : 'inactive'}`}>
-                          {bus.isActive ? '● Active' : '○ Inactive'}
-                        </div>
-                      </div>
-                      {bus.image && (
-                        <div className="bus-image-preview" style={{ margin: '12px 0' }}>
-                          <img src={bus.image} alt={`Bus ${bus.busNumber}`} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)' }} />
-                        </div>
-                      )}
-                      <div className="bus-route">
-                        <span className="route-point">{bus.source}</span>
-                        <span className="route-arrow">→</span>
-                        <span className="route-point">{bus.destination}</span>
-                      </div>
-                      <div className="bus-details">
-                        <div className="seat-info">
-                          <div className="seat-bar" style={{ '--progress': `${(bus.availableSeats / bus.totalSeats) * 100}%` }}>
-                            <div className="seat-bar-fill" style={{ width: `${(bus.availableSeats / bus.totalSeats) * 100}%`, background: getSeatColor(bus.availableSeats, bus.totalSeats) }} />
-                          </div>
-                          <span className="seat-text" style={{ color: getSeatColor(bus.availableSeats, bus.totalSeats) }}>
-                            {bus.availableSeats}/{bus.totalSeats} seats
-                          </span>
-                        </div>
-                        {bus.fare > 0 && (
-                          <span className="bus-fare">₹{bus.fare}</span>
+                      {/* Thumbnail Image Banner */}
+                      <div className="bus-card-thumb">
+                        {(bus.images && bus.images.length > 0) ? (
+                          <img src={bus.images[0]} alt={bus.busNumber} className="bus-card-thumb-img" />
+                        ) : bus.image ? (
+                          <img src={bus.image} alt={bus.busNumber} className="bus-card-thumb-img" />
+                        ) : (
+                          <div className="bus-card-thumb-empty">🚌</div>
                         )}
+                        <div className="bus-card-thumb-overlay">
+                          <div className="bus-number-badge">{bus.busNumber}</div>
+                          <div className={`bus-status-tag ${bus.isActive ? 'active' : 'inactive'}`}>
+                            {bus.isActive ? '● Active' : '○ Inactive'}
+                          </div>
+                        </div>
                       </div>
-                      {bus.availableSeats > 0 && bus.isActive && (
+
+                      <div className="bus-card-body">
+                        <div className="bus-route">
+                          <span className="route-point">{bus.source}</span>
+                          <span className="route-arrow">→</span>
+                          <span className="route-point">{bus.destination}</span>
+                        </div>
+
+                        <div className="bus-details">
+                          <div className="seat-info">
+                            <div className="seat-bar">
+                              <div className="seat-bar-fill" style={{ width: `${(bus.availableSeats / bus.totalSeats) * 100}%`, background: getSeatColor(bus.availableSeats, bus.totalSeats) }} />
+                            </div>
+                            <span className="seat-text" style={{ color: getSeatColor(bus.availableSeats, bus.totalSeats) }}>
+                              {bus.availableSeats}/{bus.totalSeats} seats
+                            </span>
+                          </div>
+                          {/* Star Rating */}
+                          <div className="bus-card-rating">
+                            <span className="rating-stars">{'★'.repeat(Math.round(bus.avgRating || 0))}{'☆'.repeat(5 - Math.round(bus.avgRating || 0))}</span>
+                            <span className="rating-count">{bus.avgRating ? bus.avgRating.toFixed(1) : '—'}</span>
+                          </div>
+                        </div>
+
                         <div className="bus-card-actions">
                           <button
                             className="btn-secondary map-trigger-btn"
                             onClick={() => { setSelectedBus(bus); setShowMap(true); }}
                           >
-                            📍 View on Map
+                            📍 Map
                           </button>
                           <button
                             className="btn-primary bus-book-btn"
-                            onClick={(e) => { e.stopPropagation(); handleBookRide(bus); }}
-                            id={`book-${bus._id}`}
+                            onClick={(e) => { e.stopPropagation(); setSelectedBusDetails(bus); }}
+                            id={`details-${bus._id}`}
                           >
-                            Book Seat
+                            View Details
                           </button>
                         </div>
-                      )}
+                      </div>
                     </GlassCard>
                   </motion.div>
                 ))
@@ -541,6 +659,212 @@ const Dashboard = ({ user }) => {
           </motion.div>
         )}
         {/* Live Map Overlay */}
+        {/* Bus Details Modal */}
+        <AnimatePresence>
+          {selectedBusDetails && (
+            <motion.div
+              className="booking-modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={(e) => { if (e.target.className === 'booking-modal-overlay') setSelectedBusDetails(null); }}
+            >
+              <motion.div
+                className="bus-details-modal"
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 60, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+              >
+                {/* Hero Image slider */}
+                <div className="bus-details-hero">
+                  {(selectedBusDetails.images && selectedBusDetails.images.length > 0) ? (
+                    <div className="bus-details-hero-slider">
+                      {selectedBusDetails.images.map((img, idx) => (
+                        <motion.img 
+                          key={idx} 
+                          src={img} 
+                          alt="Bus" 
+                          className="bus-details-hero-img-slide" 
+                          initial={{ opacity: 0 }}
+                          animate={{ 
+                            opacity: idx === selectedImgIdx ? 1 : 0,
+                            x: (idx - selectedImgIdx) * 100 + '%'
+                          }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          style={{ position: 'absolute', top: 0, left: 0 }}
+                        />
+                      ))}
+                      {selectedBusDetails.images.length > 1 && (
+                        <div className="slider-dots">
+                          {selectedBusDetails.images.map((_, i) => (
+                            <span key={i} className={`dot ${i === selectedImgIdx ? 'active' : ''}`}></span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : selectedBusDetails.image ? (
+                    <img src={selectedBusDetails.image} alt="Bus" className="bus-details-hero-img-slide" />
+                  ) : (
+                    <div className="bus-details-hero-placeholder">
+                      <span style={{ fontSize: '4rem' }}>🚌</span>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>No photo uploaded</span>
+                    </div>
+                  )}
+                  <div className="bus-details-hero-overlay">
+                    <div className="bus-details-hero-badge">{selectedBusDetails.busNumber}</div>
+                    <button className="bus-details-close" onClick={() => setSelectedBusDetails(null)}>✕</button>
+                  </div>
+                </div>
+
+                <div className="bus-details-content-scroll">
+                  {/* Route */}
+                  <div className="bus-details-route">
+                    <div className="bus-details-city">
+                      <span className="bus-details-city-label">FROM</span>
+                      <span className="bus-details-city-name">{selectedBusDetails.source}</span>
+                    </div>
+                    <div className="bus-details-route-arrow">✈</div>
+                    <div className="bus-details-city" style={{ textAlign: 'right' }}>
+                      <span className="bus-details-city-label">TO</span>
+                      <span className="bus-details-city-name">{selectedBusDetails.destination}</span>
+                    </div>
+                  </div>
+
+                  {/* Status & Seats */}
+                  <div className="bus-details-stats">
+                    <div className="bus-details-stat">
+                      <span className="bus-details-stat-val" style={{ color: getSeatColor(selectedBusDetails.availableSeats, selectedBusDetails.totalSeats) }}>
+                        {selectedBusDetails.availableSeats}
+                      </span>
+                      <span className="bus-details-stat-label">Available</span>
+                    </div>
+                    <div className="bus-details-stat">
+                      <span className="bus-details-stat-val">{selectedBusDetails.totalSeats}</span>
+                      <span className="bus-details-stat-label">Total Seats</span>
+                    </div>
+                    <div className="bus-details-stat">
+                      <span className="bus-details-stat-val" style={{ color: selectedBusDetails.isActive ? '#00c853' : '#ff6b6b' }}>
+                        {selectedBusDetails.isActive ? '● Live' : '○ Off'}
+                      </span>
+                      <span className="bus-details-stat-label">Status</span>
+                    </div>
+                  </div>
+
+                  {/* Seat Bar */}
+                  <div className="bus-details-seat-bar-wrap">
+                    <div className="seat-bar" style={{ height: '8px' }}>
+                      <div className="seat-bar-fill" style={{ width: `${(selectedBusDetails.availableSeats / selectedBusDetails.totalSeats) * 100}%`, background: getSeatColor(selectedBusDetails.availableSeats, selectedBusDetails.totalSeats) }} />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '4px', display: 'block' }}>
+                      {Math.round((selectedBusDetails.availableSeats / selectedBusDetails.totalSeats) * 100)}% seats available
+                    </span>
+                  </div>
+
+                  {/* Route Stops */}
+                  {selectedBusDetails.routePoints?.length > 0 && (
+                    <div className="bus-details-stops">
+                      <span className="bus-details-stops-label">Stops</span>
+                      <div className="bus-details-stops-list">
+                        {selectedBusDetails.routePoints.map((p, i) => (
+                          <span key={i} className="milestone-badge">{p.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conductor */}
+                  {selectedBusDetails.conductorId?.name && (
+                    <div className="bus-details-conductor">
+                      <span>👤</span>
+                      <span>Conductor: <strong>{selectedBusDetails.conductorId.name}</strong></span>
+                    </div>
+                  )}
+
+                  {/* Rating Section */}
+                  <div className="bus-details-rating-section">
+                    <div className="bus-details-rating-header">
+                      <span className="bus-details-stops-label">Rate This Bus</span>
+                      {selectedBusDetails.avgRating > 0 && (
+                        <span className="bus-details-rating-avg">
+                          ★ {selectedBusDetails.avgRating.toFixed(1)} <span className="bus-details-rating-count">({selectedBusDetails.totalRatings} {selectedBusDetails.totalRatings === 1 ? 'vote' : 'votes'})</span>
+                        </span>
+                      )}
+                    </div>
+                    <div className="bus-details-stars-interactive">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          className={`star-btn ${ratingInput >= star ? 'active' : ''}`}
+                          onClick={() => setRatingInput(star)}
+                        >
+                          {ratingInput >= star ? '★' : '☆'}
+                        </button>
+                      ))}
+                    </div>
+                    <textarea 
+                      placeholder="Write a review (optional)..." 
+                      className="form-input review-text-input" 
+                      value={reviewInput}
+                      onChange={(e) => setReviewInput(e.target.value)}
+                      rows={2}
+                    ></textarea>
+                    <button className="btn-primary submit-review-btn" onClick={handleRateSubmit} style={{ width: '100%', marginTop: '10px' }}>
+                       Submit Review
+                    </button>
+                    
+                    <div className="bus-reviews-list">
+                      <h4 className="reviews-section-title">Passenger Reviews</h4>
+                      {selectedBusDetails.ratings && selectedBusDetails.ratings.length > 0 ? (
+                        <div className="reviews-scroller">
+                          {selectedBusDetails.ratings.map((r, i) => (
+                            <div key={i} className="review-card">
+                              <div className="review-header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div className="review-stars-display">{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</div>
+                                {(r.userId?._id === user?._id || r.userId === user?._id) && (
+                                  <button className="delete-review-btn" onClick={() => handleDeleteReview(selectedBusDetails._id, r._id)} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '4px' }}>🗑</button>
+                                )}
+                              </div>
+                              {r.review && <div className="review-text">"{r.review}"</div>}
+                              {r.conductorReply && <div className="reply-text">💬 Conductor: <span>{r.conductorReply}</span></div>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="no-reviews-msg">No reviews yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="bus-details-actions">
+                    <button
+                      className="btn-secondary"
+                      style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)' }}
+                      onClick={() => { setSelectedBus(selectedBusDetails); setShowMap(true); setSelectedBusDetails(null); }}
+                    >
+                      📍 View on Map
+                    </button>
+                    {selectedBusDetails.availableSeats > 0 && selectedBusDetails.isActive ? (
+                      <button
+                        className="btn-primary"
+                        style={{ flex: 1, padding: '14px', fontSize: '1rem', fontWeight: 800 }}
+                        onClick={() => { handleBookRide(selectedBusDetails); setSelectedBusDetails(null); }}
+                      >
+                        🎟 Book Seat
+                      </button>
+                    ) : (
+                      <button className="btn-primary" style={{ flex: 1, opacity: 0.4, cursor: 'not-allowed' }} disabled>
+                        No Seats Available
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           {(showMap || pickingMode) && (
             <motion.div 
@@ -616,12 +940,6 @@ const Dashboard = ({ user }) => {
                   <p>{bookingBus.busNumber} | {bookingBus.source} to {bookingBus.destination}</p>
                   <button className="btn-close-modal" onClick={() => setBookingBus(null)}>✕</button>
                 </div>
-
-                {bookingBus.image && (
-                  <div className="booking-bus-image" style={{ width: '100%', height: '160px', overflow: 'hidden', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <img src={bookingBus.image} alt="Bus" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                )}
 
                 <div className="booking-form-scrollable">
                   <div className="booking-route-confirm">

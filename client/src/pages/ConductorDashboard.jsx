@@ -22,6 +22,8 @@ const ConductorDashboard = ({ user }) => {
   const [routeInput, setRouteInput] = useState({}); // busId -> string
   const [mapSelectorBus, setMapSelectorBus] = useState(null); // Bus being mapped
   const [dragging, setDragging] = useState({}); // busId -> bool
+  const [uploadProgress, setUploadProgress] = useState({}); // busId -> number
+  const [replyInput, setReplyInput] = useState({}); // reviewId -> string
   const watchRefs = useRef({});
 
   useEffect(() => {
@@ -48,6 +50,45 @@ const ConductorDashboard = ({ user }) => {
   useEffect(() => {
     fetchBuses();
     socketService.connect();
+    socketService.onBusUpdate((data) => {
+      setBuses(prev => {
+        const index = prev.findIndex(b => b._id === data._id);
+        if (index !== -1) {
+          return prev.map((b, i) => i === index ? { ...b, ...data } : b);
+        } else {
+          const myId = user?._id || JSON.parse(localStorage.getItem('smartbus_user') || '{}')._id;
+          if ((data.conductorId?._id || data.conductorId) === myId) {
+            return [data, ...prev];
+          }
+          return prev;
+        }
+      });
+    });
+
+    socketService.onBusDeleted((id) => {
+      setBuses(prev => prev.filter(b => b._id !== id));
+      showMsg('A bus was deleted remotely');
+    });
+
+    socketService.onNewBooking((ride) => {
+      const busId = ride.busId?._id || ride.busId;
+      setRides(prev => [ride, ...(prev || [])]);
+      showMsg(`🎉 New booking received!`);
+      
+      setBuses(prevBuses => {
+        if (!prevBuses) return [];
+        const index = prevBuses.findIndex(b => b._id === busId);
+        if (index !== -1) {
+          const bus = prevBuses[index];
+          return prevBuses.map((b, i) => i === index 
+            ? { ...b, availableSeats: Math.max(0, b.availableSeats - (ride.numberOfSeats || 1)) } 
+            : b
+          );
+        }
+        return prevBuses;
+      });
+    });
+
     return () => {
       socketService.removeAllListeners();
       Object.values(watchRefs.current).forEach(id => navigator.geolocation.clearWatch(id));
@@ -142,23 +183,98 @@ const ConductorDashboard = ({ user }) => {
     });
   };
 
-  const processFile = (file, busId) => {
+  const handleCreateBus = async (e) => {
+    e.preventDefault();
+    try {
+      await busService.create(createForm);
+      showMsg('Bus registered successfully! 🚌');
+      setCreateForm({ busNumber: '', source: '', destination: '', totalSeats: '', route: '' });
+      setShowCreateForm(false);
+      fetchBuses();
+    } catch (err) {
+      showMsg(err.response?.data?.message || 'Failed to create bus');
+    }
+  };
+
+  const processFile = async (file, busId) => {
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showMsg("Please select an image file");
+      return;
+    }
     if (file.size > 10 * 1024 * 1024) {
       showMsg("Image must be less than 10MB");
       return;
     }
+
+    setUploadProgress(prev => ({ ...prev, [busId]: 0 }));
+
+    // Step 1: Read file as data URL
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        await busService.updateImage(busId, reader.result);
-        showMsg("Bus image updated successfully! 📷");
-        fetchBuses();
-      } catch (err) {
-        console.error("Upload error details:", err.response?.data);
-        const errorMsg = err.response?.data?.message || "Failed to upload bus image";
-        showMsg(errorMsg);
-      }
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      
+      // Step 2: Load into Image element for compression
+      const img = document.createElement('img');
+      img.onload = async () => {
+        let finalData = dataUrl;
+        try {
+          const MAX_DIM = 1200;
+          let w = img.naturalWidth;
+          let h = img.naturalHeight;
+          if (w > MAX_DIM || h > MAX_DIM) {
+            const ratio = Math.min(MAX_DIM / w, MAX_DIM / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          finalData = canvas.toDataURL('image/jpeg', 0.75);
+        } catch (err) {
+          console.error('Canvas compression error:', err);
+        }
+
+        // Step 3: Upload with tracking
+        try {
+          await busService.updateImage(busId, finalData, (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(prev => ({ ...prev, [busId]: percentCompleted }));
+          });
+          showMsg("Bus image updated successfully! 📷");
+          fetchBuses();
+        } catch (err) {
+          console.error("Upload error details:", err.response?.data);
+          showMsg(err.response?.data?.message || "Failed to upload image");
+        } finally {
+          setTimeout(() => setUploadProgress(prev => {
+            const copy = { ...prev };
+            delete copy[busId];
+            return copy;
+          }), 1500);
+        }
+      };
+      img.onerror = () => {
+        console.error('Image element load error');
+        showMsg("Could not load image — try a different file");
+        setUploadProgress(prev => {
+          const copy = { ...prev };
+          delete copy[busId];
+          return copy;
+        });
+      };
+      img.src = dataUrl;
+    };
+    reader.onerror = () => {
+      console.error('FileReader error:', reader.error);
+      showMsg("Could not read file — try again");
+      setUploadProgress(prev => {
+        const copy = { ...prev };
+        delete copy[busId];
+        return copy;
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -280,6 +396,41 @@ const ConductorDashboard = ({ user }) => {
     }
   };
 
+  const handleDeleteImage = async (busId, index) => {
+    if (!window.confirm('Delete this photo?')) return;
+    try {
+      await busService.deleteImage(busId, index);
+      showMsg('Photo deleted');
+      fetchBuses();
+    } catch (err) {
+      showMsg('Failed to delete photo');
+    }
+  };
+
+  const handleReplySubmit = async (busId, reviewId) => {
+    const text = replyInput[reviewId];
+    if (!text) return;
+    try {
+      await busService.replyToReview(busId, reviewId, text);
+      showMsg('Reply posted successfully!');
+      setReplyInput(prev => ({ ...prev, [reviewId]: '' }));
+      fetchBuses();
+    } catch (err) {
+      showMsg('Failed to post reply');
+    }
+  };
+
+  const handleDeleteReview = async (busId, reviewId) => {
+    if (!window.confirm('Delete this review?')) return;
+    try {
+      await busService.deleteReview(busId, reviewId);
+      showMsg('Review deleted');
+      fetchBuses();
+    } catch (err) {
+      showMsg('Failed to delete review');
+    }
+  };
+
   if (loading) {
     return (
       <div className="page-wrapper">
@@ -382,20 +533,31 @@ const ConductorDashboard = ({ user }) => {
                     onPaste={(e) => handlePaste(e, bus._id)}
                     tabIndex="0" // Make it focusable to receive paste
                   >
-                    {bus.image ? (
-                      <>
-                        <img src={bus.image} alt="Bus" className="bus-image-preview-img" />
-                        <div className="image-overlay-actions">
-                          <label htmlFor={`upload-${bus._id}`} className="btn-update-aesthetic">
-                            <span>🔄</span> Replace Photo
-                          </label>
+                    {uploadProgress[bus._id] !== undefined ? (
+                      <div className="upload-progress-container">
+                        <div className="progress-bar-bg">
+                          <div className="progress-bar-fill" style={{ width: `${uploadProgress[bus._id]}%` }}></div>
                         </div>
-                      </>
+                        <span className="progress-text">Uploading... {uploadProgress[bus._id]}%</span>
+                      </div>
+                    ) : (bus.images && bus.images.length > 0) ? (
+                      <div className="bus-images-gallery">
+                        {bus.images.map((imgUrl, idx) => (
+                          <div key={idx} className="bus-image-item">
+                            <img src={imgUrl} alt="Bus" />
+                            <button className="btn-delete-image" onClick={() => handleDeleteImage(bus._id, idx)}>🗑</button>
+                          </div>
+                        ))}
+                        <label htmlFor={`upload-${bus._id}`} className="bus-image-item add-more">
+                          <div className="placeholder-icon">+</div>
+                          <span>Add Photo</span>
+                        </label>
+                      </div>
                     ) : (
                       <label htmlFor={`upload-${bus._id}`} className="empty-image-placeholder">
                         <div className="placeholder-icon">{dragging[bus._id] ? '📥' : '📸'}</div>
                         <div className="btn-upload-aesthetic">
-                          <span>📤</span> {dragging[bus._id] ? 'Drop to Upload' : 'Upload Bus Photo'}
+                          <span>📤</span> {dragging[bus._id] ? 'Drop to Upload' : 'Upload Bus Photos'}
                         </div>
                         <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>Drag & Drop or Paste here</span>
                       </label>
@@ -515,6 +677,64 @@ const ConductorDashboard = ({ user }) => {
                   )}
                 </tbody>
               </table>
+            </div>
+          </GlassCard>
+        </motion.div>
+
+        {/* Reviews Section */}
+        <motion.div className="conductor-bookings-section" variants={fadeInUp} initial="hidden" animate="visible" style={{ marginTop: '30px' }}>
+          <GlassCard className="bookings-card">
+            <h2 className="section-title">Passenger Reviews & Feedback</h2>
+            <div className="conductor-reviews-list">
+              {buses.every(bus => !bus.ratings || bus.ratings.length === 0) ? (
+                <p className="text-center text-muted" style={{ padding: '20px' }}>No reviews received yet.</p>
+              ) : (
+                buses.map(bus => 
+                  bus.ratings?.map(rating => (
+                    <div key={rating._id} className="conductor-review-card">
+                      <div className="review-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <div>
+                          <strong>{bus.busNumber}</strong> — {'★'.repeat(rating.rating)}{'☆'.repeat(5-rating.rating)}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <span className="review-date">{new Date(rating.createdAt).toLocaleDateString()}</span>
+                          <button 
+                            className="btn-delete-small" 
+                            onClick={() => handleDeleteReview(bus._id, rating._id)}
+                            style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '1.1rem' }}
+                          >
+                            🗑
+                          </button>
+                        </div>
+                      </div>
+                      {rating.review ? (
+                         <div className="review-body">"{rating.review}"</div>
+                      ) : (
+                         <div className="review-body text-muted italic">No text provided.</div>
+                      )}
+                      
+                      <div className="review-reply-section">
+                        {rating.conductorReply ? (
+                          <div className="existing-reply">
+                            <strong>Your Reply:</strong> {rating.conductorReply}
+                          </div>
+                        ) : (
+                          <div className="reply-form">
+                            <input 
+                              type="text" 
+                              className="form-input small" 
+                              placeholder="Type your reply here..."
+                              value={replyInput[rating._id] || ''}
+                              onChange={(e) => setReplyInput(prev => ({ ...prev, [rating._id]: e.target.value }))}
+                            />
+                            <button className="btn-primary small" onClick={() => handleReplySubmit(bus._id, rating._id)}>Reply</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
             </div>
           </GlassCard>
         </motion.div>

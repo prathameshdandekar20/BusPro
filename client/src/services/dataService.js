@@ -105,13 +105,34 @@ export const busService = {
     return response.data;
   },
 
-  updateImage: async (busId, image) => {
-    const response = await api.post('/buses/updateImage', { busId, image });
+  updateImage: async (busId, image, onUploadProgress) => {
+    const config = onUploadProgress ? { onUploadProgress } : {};
+    const response = await api.post('/buses/updateImage', { busId, image }, config);
     return response.data;
   },
 
   delete: async (busId) => {
     const response = await api.delete(`/buses/${busId}`);
+    return response.data;
+  },
+
+  deleteImage: async (busId, imageIndex) => {
+    const response = await api.post('/buses/deleteImage', { busId, imageIndex });
+    return response.data;
+  },
+
+  rateBus: async (busId, rating, review = '') => {
+    const response = await api.post('/buses/rate', { busId, rating, review });
+    return response.data;
+  },
+
+  replyToReview: async (busId, reviewId, replyText) => {
+    const response = await api.post('/buses/reply', { busId, reviewId, replyText });
+    return response.data;
+  },
+
+  deleteReview: async (busId, reviewId) => {
+    const response = await api.post('/buses/deleteReview', { busId, reviewId });
     return response.data;
   },
 };

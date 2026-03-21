@@ -8,9 +8,13 @@ const {
   updateLocation,
   updateBusRoute,
   updateImage,
+  deleteImage,
+  rateBus,
+  replyToReview,
   startTrip,
   endTrip,
   deleteBus,
+  deleteReview,
 } = require('../controllers/busController');
 const { protect, softProtect, conductorOnly } = require('../middleware/authMiddleware');
 
@@ -24,5 +28,9 @@ router.post('/updateRoute', protect, conductorOnly, updateBusRoute);
 router.post('/updateImage', protect, conductorOnly, updateImage);
 router.post('/startTrip', protect, conductorOnly, startTrip);
 router.post('/endTrip', protect, conductorOnly, endTrip);
+router.post('/rate', protect, rateBus);
+router.post('/reply', protect, conductorOnly, replyToReview);
+router.post('/deleteImage', protect, conductorOnly, deleteImage);
+router.post('/deleteReview', protect, deleteReview);
 
 module.exports = router;

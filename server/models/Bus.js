@@ -69,9 +69,23 @@ const busSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
-  image: {
+  images: [{
     type: String,
-    default: '',
+  }],
+  ratings: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    rating: { type: Number, min: 1, max: 5 },
+    review: { type: String, default: '' },
+    conductorReply: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now },
+  }],
+  avgRating: {
+    type: Number,
+    default: 0,
+  },
+  totalRatings: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,
