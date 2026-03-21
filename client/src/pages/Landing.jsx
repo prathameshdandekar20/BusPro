@@ -374,11 +374,35 @@ const ContactSection = () => {
             <div className="contact-detail"><span className="contact-detail-icon">📧</span><div><p className="contact-detail-label">Email</p><p className="contact-detail-value">hello@smartbus.io</p></div></div>
             <div className="contact-detail"><span className="contact-detail-icon">📱</span><div><p className="contact-detail-label">Phone</p><p className="contact-detail-value">+91 98765 43210</p></div></div>
             <div className="contact-detail"><span className="contact-detail-icon">📍</span><div><p className="contact-detail-label">Office</p><p className="contact-detail-value">Bangalore, India</p></div></div>
-            <div className="contact-socials" onMouseLeave={() => setHoveredSocial(null)}>
+            <div 
+              className="contact-socials" 
+              onMouseLeave={() => setHoveredSocial(null)}
+              onTouchMove={(e) => {
+                const touch = e.touches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (element) {
+                  const socialEl = element.closest('.contact-social');
+                  if (socialEl) {
+                    const name = socialEl.getAttribute('data-name');
+                    if (name && hoveredSocial !== name) setHoveredSocial(name);
+                  } else {
+                    setHoveredSocial(null);
+                  }
+                }
+              }}
+              onTouchEnd={() => setHoveredSocial(null)}
+            >
               {socials.map((s) => (
-                <a key={s.name} href={s.url} className="contact-social" onMouseEnter={() => setHoveredSocial(s.name)}>
+                <a 
+                  key={s.name} 
+                  href={s.url} 
+                  className="contact-social" 
+                  data-name={s.name}
+                  onMouseEnter={() => setHoveredSocial(s.name)}
+                  onTouchStart={() => setHoveredSocial(s.name)}
+                >
                   <span className="social-text">{s.name}</span>
-                  {hoveredSocial === s.name && <motion.div layoutId="contact-pill" className="contact-liquid-bg" transition={liquidPillTransition} />}
+                  {hoveredSocial === s.name && <motion.div layoutId="contact-pill" className="contact-liquid-bg gpu-accel" transition={liquidPillTransition} />}
                 </a>
               ))}
             </div>

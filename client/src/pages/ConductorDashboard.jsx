@@ -21,7 +21,29 @@ const ConductorDashboard = ({ user }) => {
   const [liveTracking, setLiveTracking] = useState({});
   const [routeInput, setRouteInput] = useState({}); // busId -> string
   const [mapSelectorBus, setMapSelectorBus] = useState(null); // Bus being mapped
+  const [dragging, setDragging] = useState({}); // busId -> bool
   const watchRefs = useRef({});
+
+  useEffect(() => {
+    const handleGlobalPaste = (e) => {
+      // If we are currently showing an upload UI (via showCreateForm, although we only have per-bus upload currently)
+      // or if we have a bus we are looking at. 
+      // For now, simpler: process paste if it's an image.
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const file = item.getAsFile();
+          // We need to know WHICH bus to attach to. 
+          // If there's only one bus, we can auto-pick. If multiple, we might need focus.
+          // Better: If the user is currently hovering/looking at a bus? 
+          // Or we can just show a toast "Please use the upload button or drop here to pick a bus"
+          // Let's implement per-bus drag-drop first as it's more specific.
+        }
+      }
+    };
+    window.addEventListener('paste', handleGlobalPaste);
+    return () => window.removeEventListener('paste', handleGlobalPaste);
+  }, [buses]);
 
   useEffect(() => {
     fetchBuses();
@@ -120,35 +142,70 @@ const ConductorDashboard = ({ user }) => {
     });
   };
 
-  const handleCreateBus = async (e) => {
+  const processFile = (file, busId) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      showMsg("Image must be less than 10MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        await busService.updateImage(busId, reader.result);
+        showMsg("Bus image updated successfully! 📷");
+        fetchBuses();
+      } catch (err) {
+        console.error("Upload error details:", err.response?.data);
+        const errorMsg = err.response?.data?.message || "Failed to upload bus image";
+        showMsg(errorMsg);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = (e, busId) => {
+    processFile(e.target.files[0], busId);
+  };
+
+  const handleDragOver = (e, busId) => {
     e.preventDefault();
-    try {
-      const newBus = await busService.create({
-        ...createForm,
-        totalSeats: parseInt(createForm.totalSeats),
-      });
-      console.log('Bus creation success:', newBus);
-      showMsg('Bus created successfully!');
-      setShowCreateForm(false);
-      setCreateForm({ busNumber: '', source: '', destination: '', totalSeats: '', route: '' });
-      fetchBuses();
-    } catch (err) {
-      console.error('Bus creation error:', err);
-      showMsg(err.response?.data?.message || 'Failed to create bus');
+    setDragging(prev => ({ ...prev, [busId]: true }));
+  };
+
+  const handleDragLeave = (e, busId) => {
+    e.preventDefault();
+    setDragging(prev => ({ ...prev, [busId]: false }));
+  };
+
+  const handleDrop = (e, busId) => {
+    e.preventDefault();
+    setDragging(prev => ({ ...prev, [busId]: false }));
+    const file = e.dataTransfer.files[0];
+    processFile(file, busId);
+  };
+
+  const handlePaste = (e, busId) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (const item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        processFile(file, busId);
+        break;
+      }
     }
   };
 
   const handleMapPointClick = async (latlng) => {
     if (!mapSelectorBus) return;
-    
+
     const pointName = prompt("Enter name for this milestone:", "Milestone");
     if (!pointName) return;
 
     try {
-      const newPoints = [...(mapSelectorBus.routePoints || []), { 
-        name: pointName, 
-        latitude: latlng.lat, 
-        longitude: latlng.lng 
+      const newPoints = [...(mapSelectorBus.routePoints || []), {
+        name: pointName,
+        latitude: latlng.lat,
+        longitude: latlng.lng
       }];
       await busService.updateRoute(mapSelectorBus._id, newPoints);
       showMsg(`📍 Point ${pointName} added!`);
@@ -266,23 +323,23 @@ const ConductorDashboard = ({ user }) => {
                 <div className="create-grid">
                   <div className="form-group">
                     <label>Bus Number</label>
-                    <input type="text" className="form-input" placeholder="e.g. BUS-42A" value={createForm.busNumber} onChange={(e) => setCreateForm({...createForm, busNumber: e.target.value})} required id="create-bus-number" />
+                    <input type="text" className="form-input" placeholder="e.g. BUS-42A" value={createForm.busNumber} onChange={(e) => setCreateForm({ ...createForm, busNumber: e.target.value })} required id="create-bus-number" />
                   </div>
                   <div className="form-group">
                     <label>Total Seats</label>
-                    <input type="number" className="form-input" placeholder="e.g. 40" value={createForm.totalSeats} onChange={(e) => setCreateForm({...createForm, totalSeats: e.target.value})} required id="create-total-seats" />
+                    <input type="number" className="form-input" placeholder="e.g. 40" value={createForm.totalSeats} onChange={(e) => setCreateForm({ ...createForm, totalSeats: e.target.value })} required id="create-total-seats" />
                   </div>
                   <div className="form-group">
                     <label>Source</label>
-                    <input type="text" className="form-input" placeholder="Starting point" value={createForm.source} onChange={(e) => setCreateForm({...createForm, source: e.target.value})} required id="create-source" />
+                    <input type="text" className="form-input" placeholder="Starting point" value={createForm.source} onChange={(e) => setCreateForm({ ...createForm, source: e.target.value })} required id="create-source" />
                   </div>
                   <div className="form-group">
                     <label>Destination</label>
-                    <input type="text" className="form-input" placeholder="Ending point" value={createForm.destination} onChange={(e) => setCreateForm({...createForm, destination: e.target.value})} required id="create-destination" />
+                    <input type="text" className="form-input" placeholder="Ending point" value={createForm.destination} onChange={(e) => setCreateForm({ ...createForm, destination: e.target.value })} required id="create-destination" />
                   </div>
                   <div className="form-group">
                     <label>Route</label>
-                    <input type="text" className="form-input" placeholder="Via route name" value={createForm.route} onChange={(e) => setCreateForm({...createForm, route: e.target.value})} id="create-route" />
+                    <input type="text" className="form-input" placeholder="Via route name" value={createForm.route} onChange={(e) => setCreateForm({ ...createForm, route: e.target.value })} id="create-route" />
                   </div>
                 </div>
                 <button type="submit" className="btn-primary" id="submit-create-bus">Create Bus</button>
@@ -317,6 +374,41 @@ const ConductorDashboard = ({ user }) => {
                     <span className="route-point">{bus.destination}</span>
                   </div>
 
+                  <div
+                    className={`bus-image-wrapper ${dragging[bus._id] ? 'drag-active' : ''}`}
+                    onDragOver={(e) => handleDragOver(e, bus._id)}
+                    onDragLeave={(e) => handleDragLeave(e, bus._id)}
+                    onDrop={(e) => handleDrop(e, bus._id)}
+                    onPaste={(e) => handlePaste(e, bus._id)}
+                    tabIndex="0" // Make it focusable to receive paste
+                  >
+                    {bus.image ? (
+                      <>
+                        <img src={bus.image} alt="Bus" className="bus-image-preview-img" />
+                        <div className="image-overlay-actions">
+                          <label htmlFor={`upload-${bus._id}`} className="btn-update-aesthetic">
+                            <span>🔄</span> Replace Photo
+                          </label>
+                        </div>
+                      </>
+                    ) : (
+                      <label htmlFor={`upload-${bus._id}`} className="empty-image-placeholder">
+                        <div className="placeholder-icon">{dragging[bus._id] ? '📥' : '📸'}</div>
+                        <div className="btn-upload-aesthetic">
+                          <span>📤</span> {dragging[bus._id] ? 'Drop to Upload' : 'Upload Bus Photo'}
+                        </div>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>Drag & Drop or Paste here</span>
+                      </label>
+                    )}
+                    <input
+                      type="file"
+                      id={`upload-${bus._id}`}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleImageUpload(e, bus._id)}
+                    />
+                  </div>
+
                   <div className="conductor-seats-control">
                     <label>Available Seats: <span className="text-gold">{bus.availableSeats}</span> / {bus.totalSeats}</label>
                     <div className="seats-buttons">
@@ -346,9 +438,9 @@ const ConductorDashboard = ({ user }) => {
                         ⏹ End Trip
                       </button>
                     )}
-                    
-                    <button 
-                      className={`btn-location ${liveTracking[bus._id] ? 'active-pulse' : ''}`} 
+
+                    <button
+                      className={`btn-location ${liveTracking[bus._id] ? 'active-pulse' : ''}`}
                       onClick={() => liveTracking[bus._id] ? stopLiveTracking(bus._id) : startLiveTracking(bus._id)}
                       id={`location-${bus._id}`}
                     >
@@ -359,17 +451,17 @@ const ConductorDashboard = ({ user }) => {
                   <div className="conductor-route-management">
                     <label className="text-muted small">Route Milestones (Colonies/Squares)</label>
                     <div className="route-input-group">
-                      <input 
-                        type="text" 
-                        className="form-input small" 
+                      <input
+                        type="text"
+                        className="form-input small"
                         placeholder="e.g. MG Road Square"
                         value={routeInput[bus._id] || ''}
                         onChange={(e) => setRouteInput(prev => ({ ...prev, [bus._id]: e.target.value }))}
                       />
                       <button className="btn-add-point" onClick={() => handleAddRoutePoint(bus._id)}>Add</button>
                     </div>
-                    <button 
-                      className="btn-mark-map" 
+                    <button
+                      className="btn-mark-map"
                       onClick={() => setMapSelectorBus(bus)}
                     >
                       🗺️ Mark Via Map
@@ -387,7 +479,7 @@ const ConductorDashboard = ({ user }) => {
             ))
           )}
         </motion.div>
-        
+
         {/* Bookings Section */}
         <motion.div className="conductor-bookings-section" variants={fadeInUp} initial="hidden" animate="visible">
           <GlassCard className="bookings-card">
@@ -430,7 +522,7 @@ const ConductorDashboard = ({ user }) => {
         {/* Route Marking Overlay */}
         <AnimatePresence>
           {mapSelectorBus && (
-            <motion.div 
+            <motion.div
               className="map-overlay"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -445,10 +537,10 @@ const ConductorDashboard = ({ user }) => {
                 <div className="map-instructions">
                   💡 Click anywhere on the map to add a route milestone!
                 </div>
-                <BusMap 
-                  buses={buses} 
-                  selectedBus={mapSelectorBus} 
-                  height="500px" 
+                <BusMap
+                  buses={buses}
+                  selectedBus={mapSelectorBus}
+                  height="500px"
                   onMapClick={handleMapPointClick}
                 />
                 <div className="map-modal-footer">

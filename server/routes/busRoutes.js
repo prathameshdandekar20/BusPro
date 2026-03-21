@@ -7,6 +7,7 @@ const {
   updateSeats,
   updateLocation,
   updateBusRoute,
+  updateImage,
   startTrip,
   endTrip,
   deleteBus,
@@ -20,6 +21,7 @@ router.delete('/:id', protect, conductorOnly, deleteBus);
 router.post('/updateSeats', protect, conductorOnly, updateSeats);
 router.post('/updateLocation', protect, conductorOnly, updateLocation);
 router.post('/updateRoute', protect, conductorOnly, updateBusRoute);
+router.post('/updateImage', protect, conductorOnly, updateImage);
 router.post('/startTrip', protect, conductorOnly, startTrip);
 router.post('/endTrip', protect, conductorOnly, endTrip);
 

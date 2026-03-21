@@ -75,3 +75,16 @@
 [2026-03-20T19:47:37.096Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
 [2026-03-20T19:52:04.596Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
 [2026-03-20T19:52:04.803Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
+[2026-03-21T17:22:28.544Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:22:28.805Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:45:09.003Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:49:20.617Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:49:21.185Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:52:29.524Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
+[2026-03-21T17:52:29.650Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
+[2026-03-21T17:55:00.711Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:56:06.941Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
+[2026-03-21T17:56:07.076Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
+[2026-03-21T17:58:16.615Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}
+[2026-03-21T17:59:39.602Z] User: 69b6cc059fe31cfbd6d8b007, Role: conductor, Mine: true, Filter: {"conductorId":"69b6cc059fe31cfbd6d8b007"}
+[2026-03-21T17:59:39.967Z] User: 69b6cd349fe31cfbd6d8b034, Role: passenger, Mine: undefined, Filter: {}

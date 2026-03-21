@@ -291,6 +291,49 @@ const updateBusRoute = async (req, res) => {
   }
 };
 
+// @desc    Update bus image
+// @route   POST /api/buses/updateImage
+const updateImage = async (req, res) => {
+  try {
+    const { busId, image } = req.body;
+
+    const bus = await Bus.findById(busId);
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found' });
+    }
+
+    const isOwner = bus.conductorId && bus.conductorId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    const noConductor = !bus.conductorId;
+
+    if (!isOwner && !isAdmin && !noConductor) {
+      return res.status(403).json({ message: 'Not authorized to update this bus' });
+    }
+
+    if (noConductor) {
+      bus.conductorId = req.user._id;
+    }
+
+    bus.image = image;
+    await bus.save();
+
+    // Emit socket event for real-time image update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('imageUpdate', {
+        busId: bus._id,
+        busNumber: bus.busNumber,
+        image: bus.image,
+      });
+    }
+
+    res.json({ message: 'Image updated successfully', bus });
+  } catch (error) {
+    console.error('Update image error:', error);
+    res.status(500).json({ message: 'Server error updating image' });
+  }
+};
+
 // @desc    Delete a bus
 // @route   DELETE /api/buses/:id
 const deleteBus = async (req, res) => {
@@ -323,6 +366,7 @@ module.exports = {
   updateSeats,
   updateLocation,
   updateBusRoute,
+  updateImage,
   startTrip,
   endTrip,
   deleteBus,

@@ -422,6 +422,11 @@ const Dashboard = ({ user }) => {
                           {bus.isActive ? '● Active' : '○ Inactive'}
                         </div>
                       </div>
+                      {bus.image && (
+                        <div className="bus-image-preview" style={{ margin: '12px 0' }}>
+                          <img src={bus.image} alt={`Bus ${bus.busNumber}`} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)' }} />
+                        </div>
+                      )}
                       <div className="bus-route">
                         <span className="route-point">{bus.source}</span>
                         <span className="route-arrow">→</span>
@@ -611,6 +616,12 @@ const Dashboard = ({ user }) => {
                   <p>{bookingBus.busNumber} | {bookingBus.source} to {bookingBus.destination}</p>
                   <button className="btn-close-modal" onClick={() => setBookingBus(null)}>✕</button>
                 </div>
+
+                {bookingBus.image && (
+                  <div className="booking-bus-image" style={{ width: '100%', height: '160px', overflow: 'hidden', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <img src={bookingBus.image} alt="Bus" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
 
                 <div className="booking-form-scrollable">
                   <div className="booking-route-confirm">

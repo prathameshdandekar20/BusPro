@@ -105,6 +105,11 @@ export const busService = {
     return response.data;
   },
 
+  updateImage: async (busId, image) => {
+    const response = await api.post('/buses/updateImage', { busId, image });
+    return response.data;
+  },
+
   delete: async (busId) => {
     const response = await api.delete(`/buses/${busId}`);
     return response.data;

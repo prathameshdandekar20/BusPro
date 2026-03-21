@@ -46,7 +46,7 @@ const RecenterMap = ({ center }) => {
   return null;
 };
 
-const MapClickHandler = ({ onMapClick, routePoints, snappedTarget, onMapError }) => {
+const MapClickHandler = ({ onMapClick, routePoints, onMapError }) => {
   const map = useMap();
   
   useMapEvents({
@@ -58,12 +58,34 @@ const MapClickHandler = ({ onMapClick, routePoints, snappedTarget, onMapError })
         return;
       }
 
-      if (snappedTarget) {
-        onMapClick(snappedTarget);
+      let minDest = Infinity;
+      let snappedPoint = null;
+
+      for (let i = 0; i < routePoints.length - 1; i++) {
+        const p1 = L.latLng(routePoints[i][1], routePoints[i][0]);
+        const p2 = L.latLng(routePoints[i+1][1], routePoints[i+1][0]);
+        
+        const closest = L.LineUtil.closestPointOnSegment(
+          map.latLngToLayerPoint(e.latlng),
+          map.latLngToLayerPoint(p1),
+          map.latLngToLayerPoint(p2)
+        );
+        
+        const closestLatLng = map.layerPointToLatLng(closest);
+        const dist = e.latlng.distanceTo(closestLatLng);
+
+        if (dist < minDest) {
+          minDest = dist;
+          snappedPoint = closestLatLng;
+        }
+      }
+
+      // Increased threshold for easier tapping on mobile
+      if (minDest < 300) {
+        onMapClick(snappedPoint);
       } else {
-        // User clicked too far from the route
         if (onMapError) {
-          onMapError("Please click closer to the blue bus route (within 100m).");
+          onMapError("Please tap closer to the blue bus route (within 300m).");
         }
       }
     },
@@ -378,7 +400,6 @@ const BusMap = ({
         <MapClickHandler 
           onMapClick={onMapClick} 
           routePoints={routeGeometry} 
-          snappedTarget={currentSnapPoint}
           onMapError={onMapError}
         />
         

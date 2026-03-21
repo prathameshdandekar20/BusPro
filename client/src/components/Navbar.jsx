@@ -148,9 +148,31 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
           </div>
         </button>
 
-        {/* Desktop nav links */}
-        <div className={`navbar-links ${menuOpen ? 'active' : ''}`}>
-          <div className="nav-links-inner" onMouseLeave={() => setHoveredTab(null)}>
+        <div 
+          className={`navbar-links ${menuOpen ? 'active' : ''}`}
+          onTouchMove={(e) => {
+            if (!isMobile) return;
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element) {
+              const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup');
+              if (linkEl) {
+                if (linkEl.classList.contains('nav-link')) {
+                  const title = linkEl.getAttribute('data-title');
+                  if (title && hoveredTab !== title) setHoveredTab(title);
+                } else if (linkEl.classList.contains('btn-nav-login')) {
+                  if (hoveredTab !== 'Login') setHoveredTab('Login');
+                } else if (linkEl.classList.contains('btn-nav-signup')) {
+                  if (hoveredTab !== 'Signup') setHoveredTab('Signup');
+                }
+              } else {
+                setHoveredTab(null);
+              }
+            }
+          }}
+          onTouchEnd={() => isMobile && setHoveredTab(null)}
+        >
+          <div className="nav-links-inner" onMouseLeave={() => !isMobile && setHoveredTab(null)}>
             {navLinks.map((link) => {
               const isActive = location.pathname === '/' ? activeSection === link.id : location.pathname === link.path;
               return (
@@ -159,7 +181,9 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                   to={link.path}
                   className={`nav-link ${isActive ? 'active' : ''}`}
                   id={`nav-link-${link.id}`}
-                  onMouseEnter={() => setHoveredTab(link.title)}
+                  data-title={link.title}
+                  onMouseEnter={() => !isMobile && setHoveredTab(link.title)}
+                  onTouchStart={() => isMobile && setHoveredTab(link.title)}
                   onClick={() => isMobile && setMenuOpen(false)}
                 >
                   <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>{link.title}</span>
@@ -269,7 +293,8 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
               <Link
                 to="/login"
                 className="btn-nav-login"
-                onMouseEnter={() => setHoveredTab('Login')}
+                onMouseEnter={() => !isMobile && setHoveredTab('Login')}
+                onTouchStart={() => isMobile && setHoveredTab('Login')}
                 onClick={() => isMobile && setMenuOpen(false)}
               >
                 <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>Sign In</span>
@@ -284,7 +309,8 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
               <Link
                 to="/signup"
                 className="btn-nav-signup"
-                onMouseEnter={() => setHoveredTab('Signup')}
+                onMouseEnter={() => !isMobile && setHoveredTab('Signup')}
+                onTouchStart={() => isMobile && setHoveredTab('Signup')}
                 onClick={() => isMobile && setMenuOpen(false)}
               >
                 <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>Get Started</span>
