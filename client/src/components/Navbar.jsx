@@ -108,7 +108,11 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
   ];
 
   if (user) {
-    navLinks.push({ title: 'Dashboard', path: getDashboardLink(), id: 'nav-dashboard' });
+    if (user.role === 'conductor') {
+      navLinks.push({ title: 'Conductor Dashboard', path: '/conductor', id: 'nav-conductor', isExternal: true });
+    } else {
+      navLinks.push({ title: 'Dashboard', path: '/dashboard', id: 'nav-dashboard' });
+    }
   }
 
   return (
@@ -179,12 +183,19 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                 <Link
                   key={link.title}
                   to={link.path}
+                  target={link.isExternal ? '_blank' : undefined}
                   className={`nav-link ${isActive ? 'active' : ''}`}
                   id={`nav-link-${link.id}`}
                   data-title={link.title}
                   onMouseEnter={() => !isMobile && setHoveredTab(link.title)}
                   onTouchStart={() => isMobile && setHoveredTab(link.title)}
-                  onClick={() => isMobile && setMenuOpen(false)}
+                  onClick={(e) => {
+                    if (isMobile) setMenuOpen(false);
+                    if (link.isExternal) {
+                       e.preventDefault();
+                       window.open(window.location.origin + link.path, '_blank');
+                    }
+                  }}
                 >
                   <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>{link.title}</span>
                   {((hoveredTab === link.title) || (!hoveredTab && isActive)) && (

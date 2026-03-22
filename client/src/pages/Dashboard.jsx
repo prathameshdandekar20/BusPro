@@ -573,7 +573,10 @@ const Dashboard = ({ user }) => {
                           </button>
                           <button
                             className="btn-primary bus-book-btn"
-                            onClick={(e) => { e.stopPropagation(); setSelectedBusDetails(bus); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              window.location.href = `/bus/${bus._id}`;
+                            }}
                             id={`details-${bus._id}`}
                           >
                             View Details
@@ -934,7 +937,7 @@ const Dashboard = ({ user }) => {
                 }
               }}
             >
-              <GlassCard className="booking-modal-card">
+              <GlassCard className="booking-modal-card" isStatic={true} glow={false}>
                 <div className="booking-modal-header">
                   <h2>Book Your Seat</h2>
                   <p>{bookingBus.busNumber} | {bookingBus.source} to {bookingBus.destination}</p>

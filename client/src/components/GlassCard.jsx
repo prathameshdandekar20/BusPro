@@ -73,24 +73,25 @@ const GlassCard = ({
   return (
     <div
       ref={ref}
-      className={`glass-card ${className} glass-card-variant-${variant} ${hovering ? 'glass-card-hover' : ''} ${isStatic ? 'glass-card-static' : ''} ${isVisible ? 'glass-card-visible' : 'glass-card-hidden'}`}
+      className={`glass-card ${className} glass-card-variant-${variant} ${hovering && !isStatic ? 'glass-card-hover' : ''} ${isStatic ? 'glass-card-static' : ''} ${isVisible ? 'glass-card-visible' : 'glass-card-hidden'}`}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchMove={(e) => {
+        if (isStatic) return;
         const touch = e.touches[0];
         handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
       }}
-      onTouchStart={handleMouseEnter}
-      onTouchEnd={handleMouseLeave}
+      onTouchStart={isStatic ? null : handleMouseEnter}
+      onTouchEnd={isStatic ? null : handleMouseLeave}
       onClick={onClick}
       style={{
         transform: hovering && !isStatic && tilt
           ? `perspective(1000px) rotateX(${tiltStyle.rotateX}deg) rotateY(${tiltStyle.rotateY}deg) scale3d(1.02, 1.02, 1.02) translateY(-5px)`
-          : hovering 
+          : hovering && !isStatic
             ? 'scale3d(1.02, 1.02, 1.02)'
             : 'scale3d(1, 1, 1)',
-        zIndex: hovering ? 5 : 1,
+        zIndex: hovering && !isStatic ? 5 : 1,
         ...style
       }}
     >

@@ -25,6 +25,10 @@ const LoadingFallback = () => (
   </div>
 );
 
+const BusDetails = lazy(() => import('./pages/BusDetails'));
+const BookingPage = lazy(() => import('./pages/BookingPage'));
+const GalleryPage = lazy(() => import('./pages/GalleryPage'));
+
 const ProtectedRoute = ({ children, user, loading, requiredRole }) => {
   if (loading) return <LoadingFallback />;
   if (!user) return <Navigate to="/login" replace />;
@@ -136,6 +140,30 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
               element={
                 <ProtectedRoute user={user} loading={loading}>
                   <Settings user={user} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bus/:id"
+              element={
+                <ProtectedRoute user={user} loading={loading}>
+                  <BusDetails user={user} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/book/:id"
+              element={
+                <ProtectedRoute user={user} loading={loading}>
+                  <BookingPage user={user} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bus/:id/gallery"
+              element={
+                <ProtectedRoute user={user} loading={loading}>
+                  <GalleryPage user={user} />
                 </ProtectedRoute>
               }
             />

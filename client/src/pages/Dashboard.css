@@ -981,25 +981,32 @@
   /* Mobile Booking Modal */
   .booking-modal-overlay {
     padding: 0;
-    align-items: flex-end;
+    display: block; /* Remove flex issues for the full-screen modal */
   }
 
   .booking-modal-card {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
     width: 100%;
     max-width: 100%;
-    height: 95dvh;
-    max-height: 95dvh;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    margin: 0;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
     display: flex;
     flex-direction: column;
+    background: #0f0f0f !important;
+    z-index: 10005;
   }
 
   .booking-modal-card .glass-card-content {
-    height: 100%;
-    min-height: 0;
-    max-height: 95dvh;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
   }
 
   .booking-modal-header {
