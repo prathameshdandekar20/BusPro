@@ -155,7 +155,6 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
         <div 
           className={`navbar-links ${menuOpen ? 'active' : ''}`}
           onTouchMove={(e) => {
-            if (!isMobile) return;
             const touch = e.touches[0];
             const element = document.elementFromPoint(touch.clientX, touch.clientY);
             if (element) {
@@ -174,7 +173,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
               }
             }
           }}
-          onTouchEnd={() => isMobile && setHoveredTab(null)}
+          onTouchEnd={() => setHoveredTab(null)}
         >
           <div className="nav-links-inner" onMouseLeave={() => !isMobile && setHoveredTab(null)}>
             {navLinks.map((link) => {
@@ -188,7 +187,9 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                   id={`nav-link-${link.id}`}
                   data-title={link.title}
                   onMouseEnter={() => !isMobile && setHoveredTab(link.title)}
-                  onTouchStart={() => isMobile && setHoveredTab(link.title)}
+                  onTouchStart={(e) => {
+                    setHoveredTab(link.title);
+                  }}
                   onClick={(e) => {
                     if (isMobile) setMenuOpen(false);
                     if (link.isExternal) {
@@ -226,10 +227,14 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                   setIsProfileOpen(false);
                 }
               }}
+              onTouchStart={() => {
+                setHoveredTab('Profile');
+                setIsProfileOpen(true);
+              }}
             >
               <button
                 className={`nav-profile-trigger ${isProfileOpen ? 'active' : ''}`}
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                onClick={(e) => { e.preventDefault(); setIsProfileOpen(!isProfileOpen); }}
                 aria-expanded={isProfileOpen}
               >
                 <div className="nav-avatar" style={{ position: 'relative', zIndex: 10 }}>
@@ -305,7 +310,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                 to="/login"
                 className="btn-nav-login"
                 onMouseEnter={() => !isMobile && setHoveredTab('Login')}
-                onTouchStart={() => isMobile && setHoveredTab('Login')}
+                onTouchStart={() => setHoveredTab('Login')}
                 onClick={() => isMobile && setMenuOpen(false)}
               >
                 <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>Sign In</span>
@@ -321,7 +326,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                 to="/signup"
                 className="btn-nav-signup"
                 onMouseEnter={() => !isMobile && setHoveredTab('Signup')}
-                onTouchStart={() => isMobile && setHoveredTab('Signup')}
+                onTouchStart={() => setHoveredTab('Signup')}
                 onClick={() => isMobile && setMenuOpen(false)}
               >
                 <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>Get Started</span>

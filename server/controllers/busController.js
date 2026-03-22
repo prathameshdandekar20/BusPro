@@ -30,6 +30,7 @@ const getAllBuses = async (req, res) => {
 
     console.log(`[DEBUG] Executing Bus.find with filter:`, JSON.stringify(filter));
     const buses = await Bus.find(filter)
+      .slice('images', 1)
       .populate('conductorId', 'name email')
       .sort({ updatedAt: -1 });
 
