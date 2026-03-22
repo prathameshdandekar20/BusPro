@@ -295,7 +295,6 @@
 }
 
 .star-btn:hover {
-  transform: scale(1.15);
   background: rgba(212, 175, 55, 0.15);
   border-color: var(--gold);
   color: var(--gold);

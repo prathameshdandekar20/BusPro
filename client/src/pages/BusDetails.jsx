@@ -383,7 +383,7 @@ const BusDetails = ({ user }) => {
           </motion.div>
         )}
 
-        <GlassCard style={{ width: '100%', maxWidth: '100%', maxHeight: 'none', margin: '0 0 40px 0', border: '1px solid rgba(212,175,55,0.2)' }}>
+        <GlassCard isStatic={true} tilt={false} style={{ width: '100%', maxWidth: '100%', maxHeight: 'none', margin: '0 0 40px 0', border: '1px solid rgba(212,175,55,0.2)' }}>
           <div className="bus-details-hero" style={{ borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0', overflow: 'hidden', position: 'relative' }}>
             
             {/* Click-Catcher Overlay (sits above gradients) */}

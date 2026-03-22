@@ -29,6 +29,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
 
   const [activeSection, setActiveSection] = useState('hero');
   const [isDragging, setIsDragging] = useState(false);
+  const lastTouchElemRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,6 +117,34 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
     }
   }
 
+  const handleTouchSelection = (clientX, clientY) => {
+    const element = document.elementFromPoint(clientX, clientY);
+    if (!element) return;
+
+    const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup, .nav-profile-trigger');
+    if (!linkEl) {
+      if (lastTouchElemRef.current) {
+        setHoveredTab(null);
+        lastTouchElemRef.current = null;
+      }
+      return;
+    }
+
+    if (linkEl === lastTouchElemRef.current) return;
+    lastTouchElemRef.current = linkEl;
+
+    if (linkEl.classList.contains('nav-link')) {
+      const title = linkEl.getAttribute('data-title');
+      if (title) setHoveredTab(title);
+    } else if (linkEl.classList.contains('btn-nav-login')) {
+      setHoveredTab('Login');
+    } else if (linkEl.classList.contains('btn-nav-signup')) {
+      setHoveredTab('Signup');
+    } else if (linkEl.classList.contains('nav-profile-trigger')) {
+      setHoveredTab('Profile');
+    }
+  };
+
   return (
     <motion.nav
       className={`navbar gpu-accel ${scrolled ? 'navbar-scrolled' : ''}`}
@@ -156,46 +185,39 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
         <div 
           className={`navbar-links ${menuOpen ? 'active' : ''}`}
           style={{ touchAction: 'none' }}
-          onTouchStart={() => setIsDragging(false)}
+          onTouchStart={(e) => {
+            setIsDragging(false);
+            const t = e.touches[0];
+            handleTouchSelection(t.clientX, t.clientY);
+          }}
           onTouchMove={(e) => {
             setIsDragging(true);
-            const touch = e.touches[0];
-            const element = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (element) {
-              const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup');
-              if (linkEl) {
-                if (linkEl.classList.contains('nav-link')) {
-                  const title = linkEl.getAttribute('data-title');
-                  if (title && hoveredTab !== title) setHoveredTab(title);
-                } else if (linkEl.classList.contains('btn-nav-login')) {
-                  if (hoveredTab !== 'Login') setHoveredTab('Login');
-                } else if (linkEl.classList.contains('btn-nav-signup')) {
-                  if (hoveredTab !== 'Signup') setHoveredTab('Signup');
-                }
-              } else {
-                setHoveredTab(null);
-              }
-            }
+            const t = e.touches[0];
+            handleTouchSelection(t.clientX, t.clientY);
           }}
           onTouchEnd={(e) => {
-            if (isDragging) {
-              const touch = e.changedTouches[0];
-              const element = document.elementFromPoint(touch.clientX, touch.clientY);
-              if (element) {
-                const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup');
-                if (linkEl) {
-                  if (isMobile) setMenuOpen(false);
-                  const path = linkEl.getAttribute('href');
-                  const target = linkEl.getAttribute('target');
-                  if (target === '_blank') {
-                    window.open(window.location.origin + path, '_blank');
-                  } else if (path) {
-                    navigate(path);
-                  }
+            const touch = e.changedTouches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            lastTouchElemRef.current = null;
+            setHoveredTab(null);
+
+            if (isDragging && element) {
+              const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup, .nav-profile-trigger');
+              if (linkEl) {
+                if (isMobile) setMenuOpen(false);
+                if (linkEl.classList.contains('nav-profile-trigger')) {
+                   setIsProfileOpen(!isProfileOpen);
+                   return;
+                }
+                const path = linkEl.getAttribute('href');
+                const target = linkEl.getAttribute('target');
+                if (target === '_blank') {
+                  window.open(window.location.origin + path, '_blank');
+                } else if (path) {
+                  navigate(path);
                 }
               }
             }
-            setTimeout(() => setHoveredTab(null), 150);
           }}
         >
           <div className="nav-links-inner" onMouseLeave={() => !isMobile && setHoveredTab(null)}>
