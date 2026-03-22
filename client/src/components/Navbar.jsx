@@ -28,6 +28,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
   };
 
   const [activeSection, setActiveSection] = useState('hero');
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -154,7 +155,10 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
 
         <div 
           className={`navbar-links ${menuOpen ? 'active' : ''}`}
+          style={{ touchAction: 'none' }}
+          onTouchStart={() => setIsDragging(false)}
           onTouchMove={(e) => {
+            setIsDragging(true);
             const touch = e.touches[0];
             const element = document.elementFromPoint(touch.clientX, touch.clientY);
             if (element) {
@@ -173,7 +177,26 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
               }
             }
           }}
-          onTouchEnd={() => setHoveredTab(null)}
+          onTouchEnd={(e) => {
+            if (isDragging) {
+              const touch = e.changedTouches[0];
+              const element = document.elementFromPoint(touch.clientX, touch.clientY);
+              if (element) {
+                const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup');
+                if (linkEl) {
+                  if (isMobile) setMenuOpen(false);
+                  const path = linkEl.getAttribute('href');
+                  const target = linkEl.getAttribute('target');
+                  if (target === '_blank') {
+                    window.open(window.location.origin + path, '_blank');
+                  } else if (path) {
+                    navigate(path);
+                  }
+                }
+              }
+            }
+            setTimeout(() => setHoveredTab(null), 150);
+          }}
         >
           <div className="nav-links-inner" onMouseLeave={() => !isMobile && setHoveredTab(null)}>
             {navLinks.map((link) => {
