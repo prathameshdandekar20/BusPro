@@ -104,6 +104,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
 
   const navLinks = [
     { title: 'Home', path: '/', id: 'hero' },
+    { title: 'Download App', path: '/download-app', id: 'nav-app' },
     { title: 'Features', path: '/#features', id: 'features', isHash: true },
     { title: 'How It Works', path: '/#how-it-works', id: 'how-it-works', isHash: true },
     { title: 'Contact', path: '/#contact', id: 'contact', isHash: true },

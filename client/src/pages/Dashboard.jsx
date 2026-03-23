@@ -49,6 +49,8 @@ const Dashboard = ({ user }) => {
     };
   }, []);
 
+
+
   // Reset image index when opening a new bus
   useEffect(() => {
     setSelectedImgIdx(0);
@@ -661,7 +663,6 @@ const Dashboard = ({ user }) => {
             </div>
           </motion.div>
         )}
-        {/* Live Map Overlay */}
         {/* Bus Details Modal */}
         <AnimatePresence>
           {selectedBusDetails && (

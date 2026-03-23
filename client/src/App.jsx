@@ -17,6 +17,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ConductorDashboard = lazy(() => import('./pages/ConductorDashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
 const LegalPage = lazy(() => import('./pages/LegalPage'));
+const DownloadApp = lazy(() => import('./pages/DownloadApp'));
 
 const LoadingFallback = () => (
   <div className="loading-container">
@@ -165,6 +166,12 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
                 <ProtectedRoute user={user} loading={loading}>
                   <GalleryPage user={user} />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/download-app"
+              element={
+                <DownloadApp />
               }
             />
             <Route path="/:type" element={<LegalPage />} />
