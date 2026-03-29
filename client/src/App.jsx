@@ -29,6 +29,7 @@ const LoadingFallback = () => (
 const BusDetails = lazy(() => import('./pages/BusDetails'));
 const BookingPage = lazy(() => import('./pages/BookingPage'));
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
+const TicketViewPage = lazy(() => import('./pages/TicketViewPage'));
 
 const ProtectedRoute = ({ children, user, loading, requiredRole }) => {
   if (loading) return <LoadingFallback />;
@@ -174,6 +175,7 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
                 <DownloadApp />
               }
             />
+            <Route path="/dashboard/ticket/:id" element={<TicketViewPage />} />
             <Route path="/:type" element={<LegalPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

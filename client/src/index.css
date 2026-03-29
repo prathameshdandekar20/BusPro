@@ -923,7 +923,7 @@ img {
 
 /* Light mode footer */
 [data-theme="light"] .footer {
-  background: linear-gradient(180deg, transparent, #ffffff);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff);
   border-top-color: rgba(0, 0, 0, 0.06);
 }
 

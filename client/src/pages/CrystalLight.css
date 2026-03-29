@@ -879,7 +879,7 @@
 
 /* ==================== 26. FOOTER — PURE WHITE LIGHT MODE ==================== */
 [data-theme="light"] .footer {
-  background: linear-gradient(180deg, transparent, #ffffff) !important;
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0), #ffffff) !important;
   border-top-color: rgba(0, 0, 0, 0.04) !important;
 }
 

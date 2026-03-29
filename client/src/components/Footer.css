@@ -233,7 +233,7 @@
 
 /* Light Mode Footer */
 [data-theme="light"] .footer {
-  background: linear-gradient(180deg, transparent, rgba(245, 245, 247, 1));
+  background: linear-gradient(180deg, rgba(245, 245, 247, 0), rgba(245, 245, 247, 1));
   border-top-color: rgba(0, 0, 0, 0.04);
 }
 

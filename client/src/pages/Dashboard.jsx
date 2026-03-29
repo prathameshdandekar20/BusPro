@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import BusMap from '../components/BusMap';
 import { busService, rideService } from '../services/dataService';
@@ -9,6 +10,7 @@ import { staggerContainer, staggerItem, fadeInUp } from '../animations/variants'
 import './Dashboard.css';
 
 const Dashboard = ({ user }) => {
+  const navigate = useNavigate();
   const [buses, setBuses] = useState([]);
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -363,8 +365,7 @@ const Dashboard = ({ user }) => {
       });
       setBookingMsg('Ride booked successfully! 🎟️');
       setBookingBus(null);
-      setSelectedRideForTicket(bookedRide);
-      setShowTicket(true);
+      navigate(`/dashboard/ticket/${bookedRide._id}`);
       fetchData();
       setTimeout(() => setBookingMsg(''), 3000);
     } catch (err) {
@@ -622,8 +623,7 @@ const Dashboard = ({ user }) => {
                             <button 
                               className="btn-view-ticket"
                               onClick={() => {
-                                setSelectedRideForTicket(ride);
-                                setShowTicket(true);
+                                navigate(`/dashboard/ticket/${ride._id}`);
                               }}
                             >
                               <span>🎫</span> View
@@ -631,11 +631,7 @@ const Dashboard = ({ user }) => {
                             <button 
                               className="btn-view-ticket print-shortcut-btn"
                               onClick={() => {
-                                setSelectedRideForTicket(ride);
-                                // A slight delay to ensure it's selected before printing if we used a hidden print frame, 
-                                // but here we'll just open and trigger print.
-                                setShowTicket(true);
-                                setTimeout(() => window.print(), 300);
+                                navigate(`/dashboard/ticket/${ride._id}`);
                               }}
                               title="Direct Print"
                             >
@@ -1068,16 +1064,6 @@ const Dashboard = ({ user }) => {
                 </div>
               </GlassCard>
             </motion.div>
-          )}
-
-          {/* Ticket Modal */}
-          {showTicket && (
-            <Ticket 
-              ride={selectedRideForTicket} 
-              user={user} 
-              onClose={() => setShowTicket(false)} 
-              onPrint={() => window.print()}
-            />
           )}
         </AnimatePresence>
       </div>

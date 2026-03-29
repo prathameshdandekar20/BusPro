@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import './Ticket.css';
+import ReactQRCode from 'react-qr-code';
+const QRCode = ReactQRCode.default || ReactQRCode.QRCode || ReactQRCode;
 const azadiLogo = '/azadi.png';
 const g20Logo = '/g20.png';
 const morthLogo = '/morth.png';
@@ -20,7 +22,18 @@ const Ticket = ({ ride, user, onPrint, onClose }) => {
     });
   };
 
-  const pnr = ride._id.substring(ride._id.length - 10).toUpperCase();
+  const pnr = ride?._id ? String(ride._id).substring(String(ride._id).length - 10).toUpperCase() : 'UNKNOWN PNR';
+  const journeyDate = ride?.createdAt ? new Date(ride.createdAt).toLocaleDateString('en-IN') : 'N/A';
+
+  // Ensures the QR redirects to your live Vercel site even when testing on localhost
+  const getBaseUrl = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('192.168.')) {
+      return import.meta.env.VITE_CLIENT_URL || 'https://bus-pro-gamma.vercel.app'; 
+    }
+    return window.location.origin;
+  };
+
+  const qrTicketUrl = `${getBaseUrl()}/dashboard/ticket/${ride?._id || 'unknown'}`;
 
   return (
     <div className="ticket-modal-overlay" onClick={(e) => e.target.className === 'ticket-modal-overlay' && onClose()}>
@@ -65,7 +78,7 @@ const Ticket = ({ ride, user, onPrint, onClose }) => {
                 <div className="info-box-left">
                   <div className="info-line"><strong>PNR No:</strong> <span className="pnr-text">{pnr}</span></div>
                   <div className="info-line"><strong>Bus No / Name:</strong> {ride.busId?.busNumber || 'UP-32-EX-1234'}</div>
-                  <div className="info-line"><strong>Journey Date:</strong> {new Date(ride.createdAt).toLocaleDateString('en-IN')}</div>
+                  <div className="info-line"><strong>Journey Date:</strong> {journeyDate}</div>
                 </div>
                 <div className="info-box-right">
                   <div className="info-line"><strong>Total Passengers:</strong> {ride.numberOfSeats || ride.passengers?.length || 1}</div>
@@ -156,7 +169,14 @@ const Ticket = ({ ride, user, onPrint, onClose }) => {
 
               <div className="ticket-page-1-footer">
                 <div className="footer-left">
-                  <div className="qr-box-official"></div>
+                  <div className="qr-box-official">
+                    <QRCode
+                      value={qrTicketUrl}
+                      size={72}
+                      level="L"
+                      style={{ height: "auto", maxWidth: "100%", width: "100%", display: "block" }}
+                    />
+                  </div>
                   <div className="qr-txt">Verified Ticket</div>
                 </div>
                 <div className="footer-right">

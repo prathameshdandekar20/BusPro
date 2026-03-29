@@ -132,4 +132,23 @@ const cancelRide = async (req, res) => {
   }
 };
 
-module.exports = { bookRide, getRideHistory, cancelRide };
+// @desc    Get a single ticket by ID for public verification
+// @route   GET /api/rides/ticket/:id
+const getTicketById = async (req, res) => {
+  try {
+    const ride = await Ride.findById(req.params.id)
+      .populate('busId', 'busNumber source destination fare route')
+      .populate('userId', 'name email phone avatar');
+
+    if (!ride) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    res.json(ride);
+  } catch (error) {
+    console.error('Get ticket error:', error);
+    res.status(500).json({ message: 'Server error fetching ticket' });
+  }
+};
+
+module.exports = { bookRide, getRideHistory, cancelRide, getTicketById };
