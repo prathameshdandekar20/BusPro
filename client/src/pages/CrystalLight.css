@@ -712,7 +712,7 @@
 
 /* ==================== 23. GLOBAL TEXT OVERRIDES ==================== */
 [data-theme="light"] .text-gold {
-  color: #b8941f !important;
+  color: #2563eb !important;
 }
 
 [data-theme="light"] .text-muted {
@@ -723,4 +723,189 @@
 [data-theme="light"] h2,
 [data-theme="light"] h3 {
   color: #0f172a;
+}
+
+/* ==================== 24. LOADING SPINNER — LIGHT MODE ==================== */
+[data-theme="light"] .spinner {
+  border: 3px solid rgba(37, 99, 235, 0.15) !important;
+  border-top-color: #2563eb !important;
+}
+
+[data-theme="light"] .loading-container {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .loading-container .text-muted {
+  color: #475569 !important;
+}
+
+/* ==================== 25. DASHBOARD LIGHT MODE — BLUE ACCENT ==================== */
+[data-theme="light"] .dash-stat-value {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .dash-stat-label {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .route-arrow {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .bus-fare {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .fare-value {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .ride-bus-num {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .ride-status-completed {
+  background: rgba(37, 99, 235, 0.08) !important;
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .btn-view-ticket {
+  background: rgba(37, 99, 235, 0.08) !important;
+  border-color: rgba(37, 99, 235, 0.2) !important;
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .btn-view-ticket:hover {
+  background: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+}
+
+[data-theme="light"] .bus-number-badge {
+  background: rgba(37, 99, 235, 0.08) !important;
+  border-color: rgba(37, 99, 235, 0.2) !important;
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .rating-stars {
+  color: #D4AF37 !important; /* Keep star color gold — it's meaningful */
+}
+
+[data-theme="light"] .rating-count {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .booking-modal-header h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .map-modal-header h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bus-details-city-label {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .bus-details-stops-label {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .bus-details-stops-label::before {
+  background: #2563eb !important;
+}
+
+[data-theme="light"] .bus-details-rating-avg {
+  color: #D4AF37 !important;
+}
+
+[data-theme="light"] .bus-details-route-arrow {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .reviews-section-title {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .bus-details-modal {
+  background: #fff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .bus-details-stat {
+  background: rgba(37, 99, 235, 0.04) !important;
+  border-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+[data-theme="light"] .bus-details-stat-val {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bus-details-stat-label {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .bus-details-route {
+  background: rgba(37, 99, 235, 0.04) !important;
+  border-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+[data-theme="light"] .bus-details-city-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bus-details-stops {
+  background: rgba(37, 99, 235, 0.03) !important;
+  border-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+[data-theme="light"] .milestone-badge {
+  background: rgba(37, 99, 235, 0.06) !important;
+  border-color: rgba(37, 99, 235, 0.15) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bus-details-conductor {
+  background: rgba(37, 99, 235, 0.04) !important;
+  border-color: rgba(37, 99, 235, 0.08) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .bus-details-rating-section {
+  background: rgba(37, 99, 235, 0.04) !important;
+  border-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+/* ==================== 26. FOOTER — PURE WHITE LIGHT MODE ==================== */
+[data-theme="light"] .footer {
+  background: linear-gradient(180deg, transparent, #ffffff) !important;
+  border-top-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .footer-glow {
+  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.03) 0%, transparent 70%) !important;
+}
+
+[data-theme="light"] .footer-grid {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .footer-tagline {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .india-badge {
+  background: rgba(37, 99, 235, 0.04) !important;
+  border-color: rgba(37, 99, 235, 0.12) !important;
+}
+
+[data-theme="light"] .footer-social-link:hover {
+  background: rgba(37, 99, 235, 0.08) !important;
+  border-color: rgba(37, 99, 235, 0.25) !important;
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .footer-links-group a:hover {
+  color: #2563eb !important;
 }

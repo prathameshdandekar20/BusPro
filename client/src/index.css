@@ -844,7 +844,11 @@ img {
 
 /* Light mode dashboard */
 [data-theme="light"] .dashboard-page {
-  background: #f5f5f7;
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .page-wrapper {
+  background: #f1f5f9;
 }
 
 [data-theme="light"] .dashboard-title {
@@ -919,7 +923,7 @@ img {
 
 /* Light mode footer */
 [data-theme="light"] .footer {
-  background: #fff;
+  background: linear-gradient(180deg, transparent, #ffffff);
   border-top-color: rgba(0, 0, 0, 0.06);
 }
 
