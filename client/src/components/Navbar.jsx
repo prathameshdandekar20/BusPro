@@ -30,6 +30,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
   const [activeSection, setActiveSection] = useState('hero');
   const [isDragging, setIsDragging] = useState(false);
   const lastTouchElemRef = useRef(null);
+  const hoverClearTimeoutRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -187,11 +188,13 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
           className={`navbar-links ${menuOpen ? 'active' : ''}`}
           style={{ touchAction: 'none' }}
           onTouchStart={(e) => {
+            if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
             setIsDragging(false);
             const t = e.touches[0];
             handleTouchSelection(t.clientX, t.clientY);
           }}
           onTouchMove={(e) => {
+            if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
             setIsDragging(true);
             const t = e.touches[0];
             handleTouchSelection(t.clientX, t.clientY);
@@ -200,7 +203,11 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
             const touch = e.changedTouches[0];
             const element = document.elementFromPoint(touch.clientX, touch.clientY);
             lastTouchElemRef.current = null;
-            setHoveredTab(null);
+            
+            if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
+            hoverClearTimeoutRef.current = setTimeout(() => {
+              setHoveredTab(null);
+            }, 500); // 500ms delay prevents pill from teleporting back briefly
 
             if (isDragging && element) {
               const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup, .nav-profile-trigger');
@@ -210,6 +217,15 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                    setIsProfileOpen(!isProfileOpen);
                    return;
                 }
+                
+                // Optimistically update active section on drop
+                if (linkEl.classList.contains('nav-link')) {
+                   const linkId = linkEl.getAttribute('id');
+                   if (linkId && linkId.startsWith('nav-link-')) {
+                      setActiveSection(linkId.replace('nav-link-', ''));
+                   }
+                }
+
                 const path = linkEl.getAttribute('href');
                 const target = linkEl.getAttribute('target');
                 if (target === '_blank') {
@@ -238,6 +254,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                   }}
                   onClick={(e) => {
                     if (isMobile) setMenuOpen(false);
+                    if (link.id) setActiveSection(link.id); // Optimistically update active section
                     if (link.isExternal) {
                        e.preventDefault();
                        window.open(window.location.origin + link.path, '_blank');
