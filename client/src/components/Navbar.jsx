@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { authService } from '../services/dataService';
@@ -9,9 +9,32 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredTab, setHoveredTab] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [activeSection, setActiveSection] = useState('hero');
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Refs for transient touch state (avoids React re-renders during touch)
+  const touchStateRef = useRef({
+    isDragging: false,
+    lastElem: null,
+    startX: 0,
+    startY: 0,
+  });
+  const hoverClearTimeoutRef = useRef(null);
+  const scrollBlockedRef = useRef(false);
+  const scrollBlockTimeoutRef = useRef(null);
+  const rafRef = useRef(null);
+
+  // Apple-like spring: smooth deceleration, no bounce
+  const liquidPillTransition = {
+    type: 'spring',
+    stiffness: 350,
+    damping: 38,
+    mass: 0.6,
+    restDelta: 0.5,
+    restSpeed: 10,
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 940);
@@ -20,32 +43,14 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const liquidPillTransition = {
-    type: 'spring',
-    stiffness: 450,
-    damping: 35,
-    mass: 0.8
-  };
-
-  const [activeSection, setActiveSection] = useState('hero');
-  const [isDragging, setIsDragging] = useState(false);
-  const lastTouchElemRef = useRef(null);
-  const hoverClearTimeoutRef = useRef(null);
-  const scrollBlockedRef = useRef(false);
-  const scrollBlockTimeoutRef = useRef(null);
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-      
-      // Don't update active section based on scroll during/after a drag
       if (scrollBlockedRef.current) return;
       
-      // Determine which section is currently active based on scroll
       if (location.pathname === '/') {
         const sections = ['hero', 'features', 'how-it-works', 'contact'];
         let current = '';
-        
         for (const section of sections) {
           const element = document.getElementById(section);
           if (element) {
@@ -55,7 +60,6 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
             }
           }
         }
-        
         if (current) {
           setActiveSection(current);
         } else if (window.scrollY < window.innerHeight / 2) {
@@ -64,7 +68,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // initial check
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
@@ -87,7 +91,6 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
     setIsProfileOpen(false);
   }, [location, setIsProfileOpen]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (menuOpen && isMobile) {
       document.body.style.overflow = 'hidden';
@@ -123,33 +126,134 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
     }
   }
 
-  const handleTouchSelection = (clientX, clientY) => {
-    const element = document.elementFromPoint(clientX, clientY);
-    if (!element) return;
+  // Resolve which nav element the finger is on — returns { title, type, elem } or null
+  const resolveNavElement = useCallback((clientX, clientY) => {
+    const elem = document.elementFromPoint(clientX, clientY);
+    if (!elem) return null;
 
-    const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup, .nav-profile-trigger');
-    if (!linkEl) {
-      if (lastTouchElemRef.current) {
-        setHoveredTab(null);
-        lastTouchElemRef.current = null;
-      }
-      return;
-    }
-
-    if (linkEl === lastTouchElemRef.current) return;
-    lastTouchElemRef.current = linkEl;
+    const linkEl = elem.closest('.nav-link, .btn-nav-login, .btn-nav-signup, .nav-profile-trigger');
+    if (!linkEl) return null;
 
     if (linkEl.classList.contains('nav-link')) {
       const title = linkEl.getAttribute('data-title');
-      if (title) setHoveredTab(title);
+      return title ? { title, type: 'nav-link', elem: linkEl } : null;
     } else if (linkEl.classList.contains('btn-nav-login')) {
-      setHoveredTab('Login');
+      return { title: 'Login', type: 'login', elem: linkEl };
     } else if (linkEl.classList.contains('btn-nav-signup')) {
-      setHoveredTab('Signup');
+      return { title: 'Signup', type: 'signup', elem: linkEl };
     } else if (linkEl.classList.contains('nav-profile-trigger')) {
-      setHoveredTab('Profile');
+      return { title: 'Profile', type: 'profile', elem: linkEl };
     }
-  };
+    return null;
+  }, []);
+
+  const blockScrollObserver = useCallback(() => {
+    scrollBlockedRef.current = true;
+    if (scrollBlockTimeoutRef.current) clearTimeout(scrollBlockTimeoutRef.current);
+    scrollBlockTimeoutRef.current = setTimeout(() => { scrollBlockedRef.current = false; }, 2000);
+  }, []);
+
+  const scheduleClearHover = useCallback((delayMs = 600) => {
+    if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
+    hoverClearTimeoutRef.current = setTimeout(() => {
+      setHoveredTab(null);
+    }, delayMs);
+  }, []);
+
+  // ===== Touch Handlers =====
+  const handleTouchStart = useCallback((e) => {
+    if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
+    if (scrollBlockTimeoutRef.current) clearTimeout(scrollBlockTimeoutRef.current);
+
+    const t = e.touches[0];
+    touchStateRef.current = {
+      isDragging: false,
+      lastElem: null,
+      startX: t.clientX,
+      startY: t.clientY,
+    };
+    scrollBlockedRef.current = true;
+
+    const resolved = resolveNavElement(t.clientX, t.clientY);
+    if (resolved) {
+      touchStateRef.current.lastElem = resolved.elem;
+      setHoveredTab(resolved.title);
+    }
+  }, [resolveNavElement]);
+
+  const handleTouchMove = useCallback((e) => {
+    const t = e.touches[0];
+    const ts = touchStateRef.current;
+
+    // Detect drag (> 5px movement)
+    if (!ts.isDragging) {
+      const dx = t.clientX - ts.startX;
+      const dy = t.clientY - ts.startY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        ts.isDragging = true;
+      }
+    }
+
+    // Throttle using rAF for smooth 60fps updates
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const resolved = resolveNavElement(t.clientX, t.clientY);
+      if (resolved) {
+        if (resolved.elem !== ts.lastElem) {
+          ts.lastElem = resolved.elem;
+          setHoveredTab(resolved.title);
+        }
+      } else {
+        if (ts.lastElem) {
+          ts.lastElem = null;
+          // Don't clear hovered tab instantly — let it stay smooth
+        }
+      }
+    });
+  }, [resolveNavElement]);
+
+  const handleTouchEnd = useCallback((e) => {
+    const touch = e.changedTouches[0];
+    const ts = touchStateRef.current;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+    const resolved = resolveNavElement(touch.clientX, touch.clientY);
+
+    if (ts.isDragging && resolved) {
+      // User dragged and released on a nav element — navigate to it
+      if (isMobile) setMenuOpen(false);
+
+      if (resolved.type === 'profile') {
+        setIsProfileOpen(!isProfileOpen);
+        blockScrollObserver();
+        scheduleClearHover(800);
+        touchStateRef.current = { isDragging: false, lastElem: null, startX: 0, startY: 0 };
+        return;
+      }
+
+      // Optimistically lock the active section BEFORE navigating
+      if (resolved.type === 'nav-link') {
+        const linkId = resolved.elem.getAttribute('id');
+        if (linkId && linkId.startsWith('nav-link-')) {
+          setActiveSection(linkId.replace('nav-link-', ''));
+        }
+      }
+
+      const path = resolved.elem.getAttribute('href');
+      const target = resolved.elem.getAttribute('target');
+      if (target === '_blank') {
+        window.open(window.location.origin + path, '_blank');
+      } else if (path) {
+        navigate(path);
+      }
+    }
+
+    // Smoothly clear the hover highlight after finger lifts
+    scheduleClearHover(600);
+    blockScrollObserver();
+
+    touchStateRef.current = { isDragging: false, lastElem: null, startX: 0, startY: 0 };
+  }, [resolveNavElement, isMobile, isProfileOpen, setIsProfileOpen, navigate, blockScrollObserver, scheduleClearHover]);
 
   return (
     <motion.nav
@@ -190,69 +294,10 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
 
         <div 
           className={`navbar-links ${menuOpen ? 'active' : ''}`}
-          style={{ touchAction: 'none' }}
-          onTouchStart={(e) => {
-            if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
-            if (scrollBlockTimeoutRef.current) clearTimeout(scrollBlockTimeoutRef.current);
-            setIsDragging(false);
-            scrollBlockedRef.current = true;
-            const t = e.touches[0];
-            handleTouchSelection(t.clientX, t.clientY);
-          }}
-          onTouchMove={(e) => {
-            if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
-            setIsDragging(true);
-            const t = e.touches[0];
-            handleTouchSelection(t.clientX, t.clientY);
-          }}
-          onTouchEnd={(e) => {
-            const touch = e.changedTouches[0];
-            const element = document.elementFromPoint(touch.clientX, touch.clientY);
-            lastTouchElemRef.current = null;
-            
-            if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
-
-            if (isDragging && element) {
-              const linkEl = element.closest('.nav-link, .btn-nav-login, .btn-nav-signup, .nav-profile-trigger');
-              if (linkEl) {
-                if (isMobile) setMenuOpen(false);
-                if (linkEl.classList.contains('nav-profile-trigger')) {
-                   setIsProfileOpen(!isProfileOpen);
-                   // Release scroll block after a delay
-                   scrollBlockTimeoutRef.current = setTimeout(() => { scrollBlockedRef.current = false; }, 1500);
-                   hoverClearTimeoutRef.current = setTimeout(() => { setHoveredTab(null); }, 800);
-                   return;
-                }
-                
-                // Optimistically update active section BEFORE navigating
-                if (linkEl.classList.contains('nav-link')) {
-                   const linkId = linkEl.getAttribute('id');
-                   if (linkId && linkId.startsWith('nav-link-')) {
-                      const newSection = linkId.replace('nav-link-', '');
-                      setActiveSection(newSection);
-                   }
-                }
-
-                const path = linkEl.getAttribute('href');
-                const target = linkEl.getAttribute('target');
-                if (target === '_blank') {
-                  window.open(window.location.origin + path, '_blank');
-                } else if (path) {
-                  navigate(path);
-                }
-              }
-            }
-            
-            // Clear hovered tab after a delay to prevent bounce-back
-            hoverClearTimeoutRef.current = setTimeout(() => {
-              setHoveredTab(null);
-            }, 800);
-            
-            // Unblock scroll observation after navigation settles
-            scrollBlockTimeoutRef.current = setTimeout(() => {
-              scrollBlockedRef.current = false;
-            }, 1500);
-          }}
+          style={{ touchAction: 'manipulation' }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div className="nav-links-inner" onMouseLeave={() => !isMobile && setHoveredTab(null)}>
             {navLinks.map((link) => {
@@ -266,18 +311,11 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                   id={`nav-link-${link.id}`}
                   data-title={link.title}
                   onMouseEnter={() => !isMobile && setHoveredTab(link.title)}
-                  onTouchStart={() => {
-                    if (hoverClearTimeoutRef.current) clearTimeout(hoverClearTimeoutRef.current);
-                    scrollBlockedRef.current = true;
-                    setHoveredTab(link.title);
-                  }}
                   onClick={(e) => {
                     if (isMobile) setMenuOpen(false);
                     if (link.id) {
-                      scrollBlockedRef.current = true;
                       setActiveSection(link.id);
-                      if (scrollBlockTimeoutRef.current) clearTimeout(scrollBlockTimeoutRef.current);
-                      scrollBlockTimeoutRef.current = setTimeout(() => { scrollBlockedRef.current = false; }, 1500);
+                      blockScrollObserver();
                     }
                     if (link.isExternal) {
                        e.preventDefault();
@@ -314,10 +352,6 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                   setIsProfileOpen(false);
                 }
               }}
-              onTouchStart={() => {
-                setHoveredTab('Profile');
-                setIsProfileOpen(true);
-              }}
             >
               <button
                 className={`nav-profile-trigger ${isProfileOpen ? 'active' : ''}`}
@@ -352,7 +386,7 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                     initial={isMobile ? { opacity: 0, height: 0, overflow: 'hidden' } : { opacity: 0, y: 10, scale: 0.95 }}
                     animate={isMobile ? { opacity: 1, height: 'auto', overflow: 'hidden' } : { opacity: 1, y: 0, scale: 1 }}
                     exit={isMobile ? { opacity: 0, height: 0, overflow: 'hidden' } : { opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                    transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
                   >
                     <motion.div 
                       className="profile-dropdown-content"
@@ -397,7 +431,6 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                 to="/login"
                 className="btn-nav-login"
                 onMouseEnter={() => !isMobile && setHoveredTab('Login')}
-                onTouchStart={() => setHoveredTab('Login')}
                 onClick={() => isMobile && setMenuOpen(false)}
               >
                 <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>Sign In</span>
@@ -413,7 +446,6 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
                 to="/signup"
                 className="btn-nav-signup"
                 onMouseEnter={() => !isMobile && setHoveredTab('Signup')}
-                onTouchStart={() => setHoveredTab('Signup')}
                 onClick={() => isMobile && setMenuOpen(false)}
               >
                 <span className="nav-link-text" style={{ position: 'relative', zIndex: 10 }}>Get Started</span>
