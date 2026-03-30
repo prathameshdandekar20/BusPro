@@ -265,15 +265,11 @@ const Navbar = ({ user, onLogout, isProfileOpen, setIsProfileOpen, theme, onTogg
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" id="nav-logo">
           <div className="logo-icon">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="3" y="6" width="22" height="14" rx="4" stroke="#D4AF37" strokeWidth="2" />
-              <circle cx="9" cy="22" r="2.5" stroke="#D4AF37" strokeWidth="1.5" />
-              <circle cx="19" cy="22" r="2.5" stroke="#D4AF37" strokeWidth="1.5" />
-              <rect x="7" y="9" width="5" height="5" rx="1" fill="#D4AF37" opacity="0.6" />
-              <rect x="16" y="9" width="5" height="5" rx="1" fill="#D4AF37" opacity="0.6" />
-              <line x1="14" y1="6" x2="14" y2="3" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="14" cy="2" r="1" fill="#D4AF37" />
-            </svg>
+            <img 
+              src="/logo-premium.png" 
+              alt="SmartBus Logo" 
+              style={{ width: '38px', height: '38px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} 
+            />
           </div>
           <span className="logo-text">SmartBus</span>
         </Link>

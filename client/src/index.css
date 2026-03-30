@@ -943,3 +943,121 @@ img {
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
+
+/* Update Available Toast */
+.update-banner-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(43, 45, 66, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 16px 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 215, 0, 0.1);
+  z-index: 10000;
+  width: calc(100% - 40px);
+  max-width: 480px;
+}
+
+[data-theme="light"] .update-banner-toast {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(26, 115, 232, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.update-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.update-icon {
+  font-size: 1.5rem;
+}
+
+.update-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.update-text strong {
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+[data-theme="light"] .update-text strong {
+  color: #1a1a1a;
+}
+
+.update-text span {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="light"] .update-text span {
+  color: #666;
+}
+
+.update-btn-action {
+  background: #d4af37;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+[data-theme="light"] .update-btn-action {
+  background: #1a73e8;
+  color: #fff;
+}
+
+.update-btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.update-btn-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+[data-theme="light"] .update-btn-close {
+  color: #999;
+}
+
+.update-btn-close:hover {
+  color: #fff;
+}
+
+[data-theme="light"] .update-btn-close:hover {
+  color: #333;
+}
+
+@media (max-width: 600px) {
+  .update-banner-toast {
+    bottom: 80px; /* Stay above bottom nav if present */
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  .update-content {
+    flex-direction: column;
+  }
+}

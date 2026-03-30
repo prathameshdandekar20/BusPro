@@ -1,5 +1,12 @@
 {
   "appId": "com.smartbus.app",
   "appName": "SmartBus",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "allowNavigation": ["*"],
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
 }

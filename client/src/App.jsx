@@ -1,13 +1,16 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { useAuth } from './hooks/useAuth';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { isNativeApp } from './utils/platform';
 import './index.css';
 import './pages/CrystalLight.css';
 
 const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; // User should replace this
+const APP_VERSION = '1.0.1'; // Change this when you push a new client update
 
 // Lazy load pages for performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -41,11 +44,13 @@ const ProtectedRoute = ({ children, user, loading, requiredRole }) => {
 };
 
 function AppContent({ user, loading, login, signup, googleLogin, logout }) {
+  const [updateInfo, setUpdateInfo] = useState(null); // { version, downloadUrl }
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
   const isLandingPage = location.pathname === '/';
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTransitioningTheme, setIsTransitioningTheme] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('smartbus-theme') || 'dark';
   });
@@ -66,6 +71,32 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
     }, 400); 
   };
 
+  // Only check for app updates when running inside the native APK (Capacitor)
+  useEffect(() => {
+    if (!isNativeApp()) return; // Skip update check on website
+
+    const checkForUpdates = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/app-update`);
+        const data = await response.json();
+        if (data.latestVersion && data.latestVersion !== APP_VERSION) {
+          setUpdateInfo({
+            version: data.latestVersion,
+            downloadUrl: data.downloadUrl,
+            changelog: data.changelog || 'Bug fixes and improvements.',
+          });
+        }
+      } catch (err) {
+        console.warn('App update check failed:', err);
+      }
+    };
+    checkForUpdates();
+    // Re-check every 30 minutes
+    const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.substring(1);
@@ -78,6 +109,14 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
     }
   }, [location.pathname, location.hash]);
 
+  const handleDownloadUpdate = () => {
+    if (!updateInfo?.downloadUrl) return;
+    setIsDownloading(true);
+    // Open the APK download URL — the browser/WebView will handle the download
+    window.open(updateInfo.downloadUrl, '_system');
+    setTimeout(() => setIsDownloading(false), 3000);
+  };
+
   const mainClassName = isAuthPage ? "auth-main-isolated" : (isLandingPage ? "app-main landing-main" : "app-main content-main");
 
   return (
@@ -85,6 +124,34 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
       <div className={`theme-transition-overlay ${isTransitioningTheme ? 'active' : ''}`}>
         <div className="theme-transition-spinner" />
       </div>
+
+      {/* In-App Update Banner — only visible inside Capacitor APK */}
+      <AnimatePresence>
+        {updateInfo && (
+          <motion.div 
+            className="update-banner-toast"
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 50, opacity: 0 }}
+          >
+            <div className="update-content">
+              <span className="update-icon">🚀</span>
+              <div className="update-text">
+                <strong>Update v{updateInfo.version} Available!</strong>
+                <span>{updateInfo.changelog}</span>
+              </div>
+            </div>
+            <button 
+              className="update-btn-action" 
+              onClick={handleDownloadUpdate}
+              disabled={isDownloading}
+            >
+              {isDownloading ? 'Downloading...' : 'Download Update'}
+            </button>
+            <button className="update-btn-close" onClick={() => setUpdateInfo(null)}>✕</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!isAuthPage && (
         <Navbar 

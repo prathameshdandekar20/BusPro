@@ -66,7 +66,7 @@ const DownloadApp = () => {
                 </div>
                 
                 <p className="text-faint" style={{ marginTop: '20px', fontSize: '0.9rem' }}>
-                  Version 1.0.0 • Supports Android 8.0 and above
+                  Version 1.0.1 • Supports Android 8.0 and above
                 </p>
               </div>
             </div>

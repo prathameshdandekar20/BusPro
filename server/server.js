@@ -22,7 +22,21 @@ app.set('io', io);
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests from: web client, Capacitor app (no origin / capacitor://localhost), or configured URL
+    const allowedOrigins = [
+      process.env.CLIENT_URL || 'http://localhost:5173',
+      'https://bus-pro-gamma.vercel.app',
+      'capacitor://localhost',
+      'http://localhost',
+    ];
+    // Allow requests with no origin (Capacitor native, server-to-server, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Be permissive for now; tighten in production if needed
+    }
+  },
   credentials: true,
 }));
 
@@ -36,7 +50,22 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     message: 'SmartBus API is running',
+    version: '1.0.1',
     timestamp: new Date().toISOString(),
+  });
+});
+
+// App update check endpoint (for Capacitor/APK in-app updates)
+app.get('/api/app-update', (req, res) => {
+  // Update these values whenever you release a new APK
+  const LATEST_APP_VERSION = '1.0.1';
+  const APK_DOWNLOAD_URL = 'https://bus-pro-gamma.vercel.app/downloads/SmartBus.apk';
+  
+  res.json({
+    latestVersion: LATEST_APP_VERSION,
+    downloadUrl: APK_DOWNLOAD_URL,
+    changelog: 'Bug fixes and performance improvements.',
+    releaseDate: new Date().toISOString(),
   });
 });
 
@@ -44,7 +73,7 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to SmartBus API',
-    version: '1.0.0',
+    version: '1.0.1',
     endpoints: {
       auth: '/api/auth',
       buses: '/api/buses',
