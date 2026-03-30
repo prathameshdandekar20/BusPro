@@ -105,14 +105,10 @@ const Signup = ({ onSignup, onGoogleLogin }) => {
           </Link>
         </div>
         <motion.div variants={staggerItem}>
-          <GlassCard className="auth-card" tilt={false}>
+          <GlassCard className="auth-card" tilt={false} isStatic={true}>
             <div className="auth-header">
               <Link to="/" className="auth-logo">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <rect x="3" y="6" width="22" height="14" rx="4" stroke="#D4AF37" strokeWidth="2"/>
-                  <circle cx="9" cy="22" r="2.5" stroke="#D4AF37" strokeWidth="1.5"/>
-                  <circle cx="19" cy="22" r="2.5" stroke="#D4AF37" strokeWidth="1.5"/>
-                </svg>
+                <img src="/logo-premium.png" alt="SmartBus Logo" style={{ height: '36px', width: 'auto' }} />
                 <span>SmartBus</span>
               </Link>
               <h1>Create Account</h1>
