@@ -112,9 +112,13 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
   const handleDownloadUpdate = () => {
     if (!updateInfo?.downloadUrl) return;
     setIsDownloading(true);
-    // Open the APK download URL — the browser/WebView will handle the download
-    window.open(updateInfo.downloadUrl, '_system');
-    setTimeout(() => setIsDownloading(false), 3000);
+    // Use a direct assign as fallback if window.open fails
+    try {
+      window.open(updateInfo.downloadUrl, '_system');
+    } catch (err) {
+      window.location.href = updateInfo.downloadUrl;
+    }
+    setTimeout(() => setIsDownloading(false), 5000);
   };
 
   const mainClassName = isAuthPage ? "auth-main-isolated" : (isLandingPage ? "app-main landing-main" : "app-main content-main");
@@ -130,15 +134,15 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
         {updateInfo && (
           <motion.div 
             className="update-banner-toast"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 50, opacity: 0 }}
+            initial={{ y: -100, x: '-50%', opacity: 0 }}
+            animate={{ y: 0, x: '-50%', opacity: 1 }}
+            exit={{ y: -100, x: '-50%', opacity: 0 }}
           >
             <div className="update-content">
               <span className="update-icon">🚀</span>
               <div className="update-text">
                 <strong>Update v{updateInfo.version} Available!</strong>
-                <span>{updateInfo.changelog}</span>
+                <span>{updateInfo.changelog} (Install APK after download)</span>
               </div>
             </div>
             <button 

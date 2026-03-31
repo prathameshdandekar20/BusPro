@@ -947,7 +947,7 @@ img {
 /* Update Available Toast */
 .update-banner-toast {
   position: fixed;
-  bottom: 24px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(43, 45, 66, 0.85);
@@ -1052,7 +1052,7 @@ img {
 
 @media (max-width: 600px) {
   .update-banner-toast {
-    bottom: 80px; /* Stay above bottom nav if present */
+    top: 20px; /* Stay above any headers if possible */
     flex-direction: column;
     text-align: center;
     gap: 12px;
