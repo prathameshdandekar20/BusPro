@@ -249,7 +249,6 @@
 .btn-delete-icon:hover {
   background: #ff4444;
   color: #fff;
-  transform: rotate(90deg);
 }
 
 /* Premium Bus Image Upload Styles */
@@ -267,7 +266,6 @@
 
 .bus-image-wrapper:hover {
   border-color: rgba(212, 175, 55, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .bus-image-preview-img {
@@ -277,9 +275,7 @@
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.bus-image-wrapper:hover .bus-image-preview-img {
-  transform: scale(1.05);
-}
+/* Dynamic hover effect removed */
 
 .image-overlay-actions {
   position: absolute;
@@ -324,7 +320,6 @@
 
 .empty-image-placeholder:hover .placeholder-icon {
   opacity: 1;
-  transform: translateY(-4px);
 }
 
 .btn-upload-aesthetic {

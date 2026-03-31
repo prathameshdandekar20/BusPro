@@ -511,8 +511,6 @@
 .btn-view-ticket:hover {
   background: var(--gold);
   color: #000;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
 }
 
 .print-shortcut-btn {
@@ -525,7 +523,6 @@
   background: #2196f3;
   color: white;
   border-color: #2196f3;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 }
 
 /* Empty State */

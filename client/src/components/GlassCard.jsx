@@ -86,12 +86,8 @@ const GlassCard = ({
       onTouchEnd={isStatic ? null : handleMouseLeave}
       onClick={onClick}
       style={{
-        transform: hovering && !isStatic && tilt
-          ? `perspective(1000px) rotateX(${tiltStyle.rotateX}deg) rotateY(${tiltStyle.rotateY}deg) scale3d(1.02, 1.02, 1.02) translateY(-5px)`
-          : hovering && !isStatic
-            ? 'scale3d(1.02, 1.02, 1.02)'
-            : 'scale3d(1, 1, 1)',
-        zIndex: hovering && !isStatic ? 5 : 1,
+        transform: 'scale3d(1, 1, 1)',
+        zIndex: 1,
         ...style
       }}
     >

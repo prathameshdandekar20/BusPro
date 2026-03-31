@@ -308,13 +308,7 @@ img {
   transition: var(--transition-smooth);
 }
 
-.liquid-glass:hover::before {
-  background: radial-gradient(
-    ellipse at 30% 20%,
-    rgba(212, 175, 55, 0.1) 0%,
-    transparent 50%
-  );
-}
+/* Hover effect removed */
 
 .liquid-glass::after {
   content: '';
@@ -362,10 +356,7 @@ img {
   transition: 0.6s;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.4);
-}
+/* Hover effect removed */
 
 .btn-primary:hover::before {
   left: 100%;
@@ -394,8 +385,6 @@ img {
 .btn-secondary:hover {
   background: rgba(212, 175, 55, 0.1);
   border-color: var(--gold);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
 }
 
 .form-input {
@@ -1023,10 +1012,7 @@ img {
   color: #fff;
 }
 
-.update-btn-action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-}
+/* Hover effect removed */
 
 .update-btn-close {
   background: none;

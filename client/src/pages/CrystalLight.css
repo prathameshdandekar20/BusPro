@@ -182,14 +182,7 @@
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-[data-theme="light"] .glass-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 
-    0 24px 60px rgba(15, 23, 42, 0.12),
-    0 8px 16px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
-  border-color: rgba(59, 130, 246, 0.5) !important;
-}
+/* Hover effect removed */
 
 [data-theme="light"] .glass-card::before {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent) !important;
