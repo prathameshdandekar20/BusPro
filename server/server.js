@@ -50,7 +50,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     message: 'SmartBus API is running',
-    version: '1.0.3',
+    version: '1.0.4',
     timestamp: new Date().toISOString(),
   });
 });
@@ -58,9 +58,9 @@ app.get('/api/health', (req, res) => {
 // App update check endpoint (for Capacitor/APK in-app updates)
 app.get('/api/app-update', (req, res) => {
   // Update these values whenever you release a new APK
-  const LATEST_APP_VERSION = '1.0.3';
+  const LATEST_APP_VERSION = '1.0.4';
   const APK_DOWNLOAD_URL = 'https://bus-pro-gamma.vercel.app/downloads/SmartBus.apk';
-  
+
   res.json({
     latestVersion: LATEST_APP_VERSION,
     downloadUrl: APK_DOWNLOAD_URL,

@@ -6,11 +6,12 @@ import Footer from './components/Footer';
 import { useAuth } from './hooks/useAuth';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { isNativeApp } from './utils/platform';
+import MobileApp from './mobile/MobileApp';
 import './index.css';
 import './pages/CrystalLight.css';
 
 const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; // User should replace this
-const APP_VERSION = '1.0.3'; // Change this when you push a new client update
+const APP_VERSION = '1.0.4'; // Change this when you push a new client update
 
 // Lazy load pages for performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -67,8 +68,8 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
     setTimeout(() => {
       setTheme(prev => prev === 'dark' ? 'light' : 'dark');
       // Wait for DOM paint and css application, then fade out
-      setTimeout(() => setIsTransitioningTheme(false), 500); 
-    }, 400); 
+      setTimeout(() => setIsTransitioningTheme(false), 500);
+    }, 400);
   };
 
   // Only check for app updates when running inside the native APK (Capacitor)
@@ -132,7 +133,7 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
       {/* In-App Update Banner — only visible inside Capacitor APK */}
       <AnimatePresence>
         {updateInfo && (
-          <motion.div 
+          <motion.div
             className="update-banner-toast"
             initial={{ y: -100, x: '-50%', opacity: 0 }}
             animate={{ y: 0, x: '-50%', opacity: 1 }}
@@ -145,8 +146,8 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
                 <span>{updateInfo.changelog} (Install APK after download)</span>
               </div>
             </div>
-            <button 
-              className="update-btn-action" 
+            <button
+              className="update-btn-action"
               onClick={handleDownloadUpdate}
               disabled={isDownloading}
             >
@@ -158,10 +159,10 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
       </AnimatePresence>
 
       {!isAuthPage && (
-        <Navbar 
-          user={user} 
-          onLogout={logout} 
-          isProfileOpen={isProfileOpen} 
+        <Navbar
+          user={user}
+          onLogout={logout}
+          isProfileOpen={isProfileOpen}
           setIsProfileOpen={setIsProfileOpen}
           theme={theme}
           onToggleTheme={toggleTheme}
@@ -261,16 +262,21 @@ function AppContent({ user, loading, login, signup, googleLogin, logout }) {
 function App() {
   const { user, loading, login, signup, googleLogin, logout } = useAuth();
 
+  // ── APK: render entirely separate mobile app ──
+  if (isNativeApp()) {
+    return <MobileApp user={user} loading={loading} login={login} signup={signup} googleLogin={googleLogin} logout={logout} googleClientId={GOOGLE_CLIENT_ID} />;
+  }
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Router>
-        <AppContent 
-          user={user} 
-          loading={loading} 
-          login={login} 
-          signup={signup} 
-          googleLogin={googleLogin} 
-          logout={logout} 
+        <AppContent
+          user={user}
+          loading={loading}
+          login={login}
+          signup={signup}
+          googleLogin={googleLogin}
+          logout={logout}
         />
       </Router>
     </GoogleOAuthProvider>
