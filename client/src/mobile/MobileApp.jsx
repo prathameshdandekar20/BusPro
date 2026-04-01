@@ -12,10 +12,15 @@ const ActivityScreen = lazy(() => import('./screens/ActivityScreen'));
 const ProfileScreen = lazy(() => import('./screens/ProfileScreen'));
 const ConductorScreen = lazy(() => import('./screens/ConductorScreen'));
 const BusDetailScreen = lazy(() => import('./screens/BusDetailScreen'));
+const BookingScreen = lazy(() => import('./screens/BookingScreen'));
 
 const Loading = () => (
-  <div className="mobile-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-    <div className="m-loading"><div className="m-spinner" /><span className="m-label">Loading...</span></div>
+  <div className="mobile-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column' }}>
+    <div className="m-loading">
+      <div className="m-spinner" />
+    </div>
+    <span className="m-label" style={{ marginTop: '15px' }}>SmartBus Loading...</span>
+    <span style={{ fontSize: '10px', opacity: 0.5, fontWeight: 900, marginTop: '8px' }}>v1.0.5</span>
   </div>
 );
 
@@ -47,6 +52,9 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
               } />
               <Route path="/bus/:id" element={
                 user ? <BusDetailScreen user={user} /> : <Navigate to="/login" replace />
+              } />
+              <Route path="/book/:id" element={
+                user ? <BookingScreen user={user} /> : <Navigate to="/login" replace />
               } />
 
               {/* Conductor */}

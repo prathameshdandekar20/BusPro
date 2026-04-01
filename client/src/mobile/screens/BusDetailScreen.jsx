@@ -108,20 +108,14 @@ const BusDetailScreen = ({ user }) => {
 
       {/* Booking Section */}
       <div className="m-card m-mb-16">
-        <div className="m-label m-mb-12">Quick Reserve</div>
-        <div className="m-flex m-flex-between m-items-center m-mb-16">
-          <div>
-            <div className="m-label">Total Fare</div>
-            <div className="m-stat-value m-mt-4">₹{50 * seats}</div>
-          </div>
-          <div className="m-flex m-gap-8 m-items-center">
-            <button className="m-btn-icon" style={{ width: 36, height: 36 }} onClick={() => setSeats(Math.max(1, seats - 1))}>−</button>
-            <span className="m-text" style={{ fontWeight: 900, fontSize: 18, width: 28, textAlign: 'center' }}>{seats}</span>
-            <button className="m-btn-icon" style={{ width: 36, height: 36 }} onClick={() => setSeats(Math.min(bus.availableSeats, seats + 1))}>+</button>
-          </div>
-        </div>
-        <button className="m-btn m-btn-lemon" onClick={handleBook} disabled={booking || bus.availableSeats === 0}>
-          {booking ? 'Booking...' : bus.availableSeats === 0 ? 'Sold Out' : <><FiCheck /> Confirm Booking</>}
+        <div className="m-label m-mb-12">Ride Reservation</div>
+        <p className="m-text-sm m-text-muted m-mb-16">Select your boarding point, destination, and add passenger details in the next step.</p>
+        <button 
+          className="m-btn m-btn-lemon" 
+          onClick={() => navigate(`/book/${bus._id}`)} 
+          disabled={bus.availableSeats === 0}
+        >
+          {bus.availableSeats === 0 ? 'Sold Out' : <><FiCheck /> Reserve Your Seat</>}
         </button>
       </div>
 
