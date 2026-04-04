@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiArrowLeft, FiPlus, FiTrash2, FiMapPin, FiNavigation } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiTrash2, FiMapPin, FiNavigation, FiUser } from 'react-icons/fi';
 import { busService, rideService } from '../../services/dataService';
+import { useSocket } from '../../hooks/useSocket';
 import BusMap from '../../components/BusMap';
 import Ticket from '../../components/Ticket';
 
@@ -25,6 +26,8 @@ const BookingScreen = ({ user }) => {
   const [showTicket, setShowTicket] = useState(false);
   const [bookedRide, setBookedRide] = useState(null);
 
+  const { busUpdates, newBooking } = useSocket();
+
   useEffect(() => {
     busService.getById(id).then(data => {
       setBus(data);
@@ -35,6 +38,22 @@ const BookingScreen = ({ user }) => {
       }));
     }).catch(console.error).finally(() => setLoading(false));
   }, [id]);
+
+  // Real-time bus updates
+  useEffect(() => {
+    if (busUpdates && bus?._id === busUpdates._id) {
+      setBus(prev => prev ? { ...prev, ...busUpdates } : null);
+    }
+  }, [busUpdates, bus]);
+
+  useEffect(() => {
+    if (newBooking) {
+      const busId = newBooking.busId?._id || newBooking.busId;
+      if (bus?._id === busId) {
+        setBus(prev => prev ? { ...prev, availableSeats: Math.max(0, prev.availableSeats - (newBooking.numberOfSeats || 1)) } : null);
+      }
+    }
+  }, [newBooking, bus]);
 
   useEffect(() => {
     let isMounted = true;
@@ -182,14 +201,27 @@ const BookingScreen = ({ user }) => {
   if (!bus) return <div className="mobile-screen"><p className="m-text m-text-center">Bus not found</p></div>;
 
   return (
-    <div className="mobile-screen" style={{ paddingBottom: 100 }}>
+    <div className="mobile-screen m-booking-screen">
       {/* Header */}
       <div className="m-flex m-items-center m-gap-16 m-mb-24">
         <button className="m-btn-icon" onClick={() => navigate(-1)}><FiArrowLeft /></button>
-        <div>
+        <div style={{ flex: 1 }}>
           <div className="m-heading" style={{ fontSize: 20 }}>Book Tickets</div>
           <div className="m-label">{bus.busNumber} • {bus.source} → {bus.destination}</div>
         </div>
+        <div className="m-flex m-flex-col m-items-center" style={{ textAlign: 'center' }}>
+          <span className={`m-badge ${bus.isActive ? 'm-badge-success' : 'm-badge-danger'}`} style={{ fontSize: 8 }}>
+            {bus.isActive ? 'LIVE' : 'OFFLINE'}
+          </span>
+          <span className="m-text-sm m-text-muted m-mt-4">
+            <FiUser size={10} /> {bus.availableSeats}/{bus.totalSeats}
+          </span>
+        </div>
+      </div>
+
+      {/* Route Map Preview */}
+      <div className="m-card m-mb-20" style={{ padding: 0, height: 140, borderRadius: 'var(--m-radius)', overflow: 'hidden' }}>
+        <BusMap buses={[bus]} interactive={false} height="100%" />
       </div>
 
       {/* Boarding/Dropping Selection */}
@@ -206,7 +238,10 @@ const BookingScreen = ({ user }) => {
             {bus.routePoints?.map((p, i) => <option key={i} value={p.name}>{p.name}</option>)}
             {bookingDetails.boarding.includes('(') && <option value={bookingDetails.boarding}>📍 Custom Point</option>}
           </select>
-          <button className="m-btn-icon" onClick={() => setPickingMode('boarding')}><FiMapPin /></button>
+          <button className="m-btn-icon" onClick={() => setPickingMode('boarding')}
+            style={{ background: pickingMode === 'boarding' ? 'var(--m-lemon)' : undefined }}>
+            <FiMapPin />
+          </button>
         </div>
 
         <label className="m-label m-mb-8">Dropping At</label>
@@ -221,7 +256,27 @@ const BookingScreen = ({ user }) => {
             <option value={bus.destination}>{bus.destination} (End)</option>
             {bookingDetails.dropping.includes('(') && <option value={bookingDetails.dropping}>📍 Custom Point</option>}
           </select>
-          <button className="m-btn-icon" onClick={() => setPickingMode('dropping')}><FiMapPin /></button>
+          <button className="m-btn-icon" onClick={() => setPickingMode('dropping')}
+            style={{ background: pickingMode === 'dropping' ? 'var(--m-lemon)' : undefined }}>
+            <FiMapPin />
+          </button>
+        </div>
+      </div>
+
+      {/* Fare Summary Card */}
+      <div className="m-card m-mb-20">
+        <div className="m-flex m-flex-between m-items-center">
+          <div>
+            <div className="m-label">Estimated Fare</div>
+            <div className="m-stat-value m-mt-4" style={{ color: 'var(--m-dark)' }}>
+              {calculatingFare ? 'Calculating...' : `₹${calculateFare()}`}
+            </div>
+          </div>
+          <div className="m-flex m-flex-col m-items-center" style={{ textAlign: 'right' }}>
+            <span className="m-text-sm m-text-muted">{distanceKm} km</span>
+            <span className="m-text-sm m-text-muted">{bookingDetails.passengers.length} Person(s)</span>
+            <span className="m-text-sm m-text-muted">₹2/km rate</span>
+          </div>
         </div>
       </div>
 
@@ -253,13 +308,13 @@ const BookingScreen = ({ user }) => {
         </div>
       ))}
 
-      {/* Summary Floating Footer */}
-      <div className="m-bottom-nav" style={{ height: 'auto', padding: '16px 20px', flexDirection: 'column', gap: 12 }}>
+      {/* Confirm Button — Fixed at bottom but not overlapping nav */}
+      <div className="m-booking-footer">
         <div className="m-flex m-flex-between m-items-center" style={{ width: '100%' }}>
           <div>
             <div className="m-label">Total Fare</div>
-            <div className="m-stat-value" style={{ color: 'var(--m-dark)' }}>
-              {calculatingFare ? 'Calculating...' : `₹${calculateFare()}`}
+            <div className="m-stat-value" style={{ color: 'var(--m-dark)', fontSize: 20 }}>
+              {calculatingFare ? '...' : `₹${calculateFare()}`}
             </div>
           </div>
           <div className="m-text-sm m-text-muted">
@@ -275,7 +330,9 @@ const BookingScreen = ({ user }) => {
       <AnimatePresence>
         {pickingMode && (
           <motion.div className="m-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="m-sheet">
+            <motion.div className="m-sheet" onClick={e => e.stopPropagation()}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
               <div className="m-sheet-handle" />
               <div className="m-flex m-flex-between m-items-center m-mb-16">
                 <div className="m-heading" style={{ fontSize: 18 }}>Select {pickingMode === 'boarding' ? 'Boarding' : 'Drop'} Point</div>
@@ -289,10 +346,18 @@ const BookingScreen = ({ user }) => {
                   height="100%" 
                   onMapClick={handleMapClick}
                   onMapError={flash}
+                  boardingPoint={(() => {
+                    const match = bookingDetails.boarding.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+                    return match ? { lat: parseFloat(match[1]), lng: parseFloat(match[2]) } : null;
+                  })()}
+                  droppingPoint={(() => {
+                    const match = bookingDetails.dropping.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+                    return match ? { lat: parseFloat(match[1]), lng: parseFloat(match[2]) } : null;
+                  })()}
                 />
               </div>
               <button className="m-btn m-btn-dark m-mt-16" onClick={() => setPickingMode(null)}>Cancel</button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
