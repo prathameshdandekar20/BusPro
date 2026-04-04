@@ -7,9 +7,27 @@ const azadiLogo = '/azadi.png';
 const g20Logo = '/g20.png';
 const morthLogo = '/morth.png';
 const swachhLogo = '/swachh_bharat.png';
+import { Share } from '@capacitor/share';
+import { isNativeApp } from '../utils/platform';
 
 const Ticket = ({ ride, user, onPrint, onClose }) => {
   if (!ride) return null;
+
+  const handlePrintOrShare = async () => {
+    if (isNativeApp()) {
+      try {
+        await Share.share({
+          title: 'SmartBus Ticket',
+          text: `🎟️ My SmartBus Ticket (PNR: ${ride?._id ? String(ride._id).substring(String(ride._id).length - 10).toUpperCase() : 'UNKNOWN'})\n📍 ${ride?.boardingPoint} to ${ride?.droppingPoint}`,
+          url: ride?._id ? `${window.location.origin}/dashboard/ticket/${ride._id}` : window.location.origin,
+          dialogTitle: 'Share or Save Ticket'
+        });
+      } catch(e) { console.error('Share failed', e); }
+    } else {
+      if (onPrint) onPrint();
+      else window.print();
+    }
+  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleString('en-IN', {
@@ -44,8 +62,8 @@ const Ticket = ({ ride, user, onPrint, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ticket-controls-header">
-          <button className="btn-print-action" onClick={onPrint}>
-            <span>🖨️</span> Print Ticket
+          <button className="btn-print-action" onClick={handlePrintOrShare}>
+            <span>{isNativeApp() ? '📤' : '🖨️'}</span> {isNativeApp() ? 'Share / Save' : 'Print Ticket'}
           </button>
           <button className="btn-close-ticket" onClick={onClose} aria-label="Close Ticket">✕ Close</button>
         </div>

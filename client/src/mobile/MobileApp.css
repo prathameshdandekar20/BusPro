@@ -1180,3 +1180,8 @@
 /* ==================== Scrollbar ==================== */
 .mobile-app::-webkit-scrollbar { width: 0; }
 .mobile-app { scrollbar-width: none; }
+
+ 
+ / *   A d d e d   T i c k e t   M o b i l e   O v e r r i d e s   * / 
+ . m - a p p   . t i c k e t - c o n t a i n e r ,   . m o b i l e - s c r e e n   . t i c k e t - c o n t a i n e r   {   w i d t h :   1 0 0 %   ! i m p o r t a n t ;   m a x - w i d t h :   1 0 0 %   ! i m p o r t a n t ;   m i n - w i d t h :   0   ! i m p o r t a n t ;   h e i g h t :   9 0 v h   ! i m p o r t a n t ;   m a r g i n :   0   ! i m p o r t a n t ;   b o r d e r - r a d i u s :   2 0 p x   2 0 p x   0   0   ! i m p o r t a n t ;   }   . m - a p p   . t i c k e t - m o d a l - o v e r l a y ,   . m o b i l e - s c r e e n   . t i c k e t - m o d a l - o v e r l a y   {   a l i g n - i t e m s :   f l e x - e n d   ! i m p o r t a n t ;   p a d d i n g :   0   ! i m p o r t a n t ;   }   . m - a p p   . n a t i o n a l - p r i d e - h e a d e r   {   f l e x - d i r e c t i o n :   c o l u m n ;   g a p :   1 0 p x ;   }  
+ 
