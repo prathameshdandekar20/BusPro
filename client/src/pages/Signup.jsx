@@ -26,7 +26,8 @@ const Signup = ({ onSignup, onGoogleLogin }) => {
         email: payload.email,
         name: payload.name,
         googleId: payload.sub,
-        avatar: payload.picture
+        avatar: payload.picture,
+        role: formData.role
       });
       
       if (user.role === 'conductor') {

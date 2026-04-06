@@ -13,6 +13,7 @@ const BottomNav = ({ isConductor }) => {
 
   const conductorTabs = [
     { path: '/conductor', icon: <FiTruck />, label: 'My Fleet' },
+    { path: '/dashboard', icon: <FiHome />, label: 'Home' },
     { path: '/profile', icon: <FiUser />, label: 'Profile' },
   ];
 

@@ -66,7 +66,16 @@ const ConductorScreen = ({ user }) => {
       const mine = busData.filter(b => (b.conductorId?._id || b.conductorId) === myId);
       setBuses(mine);
       setRides(rideData);
-      if (mine.length > 0 && !selectedBus) setSelectedBus(mine[0]);
+      // Keep selectedBus in sync with fresh data
+      if (mine.length > 0) {
+        setSelectedBus(prev => {
+          if (!prev) return mine[0];
+          const refreshed = mine.find(b => b._id === prev._id);
+          return refreshed || mine[0];
+        });
+      } else {
+        setSelectedBus(null);
+      }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
@@ -88,11 +97,13 @@ const ConductorScreen = ({ user }) => {
   const toggleTrip = async () => {
     if (!selectedBus) return;
     try {
-      const updated = selectedBus.isActive
+      const response = selectedBus.isActive
         ? await busService.endTrip(selectedBus._id)
         : await busService.startTrip(selectedBus._id);
+      // API returns { message, bus } — extract the bus object
+      const updated = response.bus || response;
       setSelectedBus(prev => ({ ...prev, ...updated }));
-      setBuses(p => p.map(b => b._id === updated._id ? { ...b, ...updated } : b));
+      setBuses(p => p.map(b => b._id === (updated._id || selectedBus._id) ? { ...b, ...updated } : b));
       flash(updated.isActive ? 'Trip started! 🟢' : 'Trip ended 🔴');
     } catch (e) { flash('Toggle failed'); }
   };
@@ -452,7 +463,7 @@ const ConductorScreen = ({ user }) => {
                   {ride.boardingPoint || ride.busId?.source} → {ride.droppingPoint || ride.busId?.destination}
                 </div>
                 <div className="m-text-sm m-text-muted m-mt-4">
-                  {ride.numberOfSeats} seat{ride.numberOfSeats > 1 ? 's' : ''} • ₹{ride.totalFare} • {new Date(ride.createdAt).toLocaleDateString()}
+                  {ride.numberOfSeats} seat{ride.numberOfSeats > 1 ? 's' : ''} • ₹{ride.fare || ride.totalFare || 0} • {new Date(ride.createdAt).toLocaleDateString()}
                 </div>
                 {ride.passengers?.length > 0 && (
                   <div className="m-mt-8 m-flex m-gap-4" style={{ flexWrap: 'wrap' }}>

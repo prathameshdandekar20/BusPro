@@ -41,7 +41,7 @@ const ActivityScreen = ({ user }) => {
                       {ride.busId?.source || '??'} → {ride.busId?.destination || '??'}
                     </div>
                     <div className="m-label m-mt-4">
-                      {new Date(ride.createdAt).toLocaleDateString()} • ₹{ride.totalFare} • {ride.numberOfSeats} seat{ride.numberOfSeats > 1 ? 's' : ''}
+                      {new Date(ride.createdAt).toLocaleDateString()} • ₹{ride.fare || 0} • {ride.numberOfSeats} seat{ride.numberOfSeats > 1 ? 's' : ''}
                     </div>
                   </div>
                 </div>

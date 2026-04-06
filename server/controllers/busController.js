@@ -23,12 +23,7 @@ const getAllBuses = async (req, res) => {
       }
     }
 
-    // Temporary file-based logging for debugging
-    const fs = require('fs');
-    const logMsg = `[${new Date().toISOString()}] User: ${req.user?._id}, Role: ${req.user?.role}, Mine: ${mine}, Filter: ${JSON.stringify(filter)}\n`;
-    try { fs.appendFileSync('c:/Users/HI/Desktop/buspro/server/debug.log', logMsg); } catch(e) {}
 
-    console.log(`[DEBUG] Executing Bus.find with filter:`, JSON.stringify(filter));
     const buses = await Bus.find(filter)
       .slice('images', 1)
       .populate('conductorId', 'name email')

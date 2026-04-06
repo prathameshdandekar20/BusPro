@@ -11,6 +11,8 @@ const ProfileScreen = lazy(() => import('./screens/ProfileScreen'));
 const ConductorScreen = lazy(() => import('./screens/ConductorScreen'));
 const BusDetailScreen = lazy(() => import('./screens/BusDetailScreen'));
 const BookingScreen = lazy(() => import('./screens/BookingScreen'));
+const Settings = lazy(() => import('../pages/Settings'));
+const LegalPage = lazy(() => import('../pages/LegalPage'));
 
 /* ── Branded Splash Screen ─────────────────────────────── */
 const SplashScreen = ({ onFinish }) => {
@@ -34,7 +36,7 @@ const SplashScreen = ({ onFinish }) => {
         <div className="m-splash-loader">
           <div className="m-splash-loader-bar" />
         </div>
-        <span className="m-splash-version">v1.0.5</span>
+        <span className="m-splash-version">v1.0.9</span>
       </div>
     </div>
   );
@@ -93,6 +95,13 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
                   ? <ConductorScreen user={user} />
                   : <Navigate to="/dashboard" replace />
               } />
+
+              {/* Settings & Legal */}
+              <Route path="/settings" element={
+                user ? <Settings user={user} /> : <Navigate to="/login" replace />
+              } />
+              <Route path="/privacy-policy" element={<LegalPage />} />
+              <Route path="/terms" element={<LegalPage />} />
 
               {/* Landing → redirect to login or dashboard */}
               <Route path="/" element={

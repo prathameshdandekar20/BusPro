@@ -54,7 +54,8 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await User.findOne({ email });
+    const sanitizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: sanitizedEmail });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -86,7 +87,7 @@ const login = async (req, res) => {
 // @route   POST /api/auth/google
 const googleAuth = async (req, res) => {
   try {
-    const { email, name, googleId, avatar } = req.body;
+    const { email, name, googleId, avatar, role } = req.body;
 
     if (!email || !googleId) {
       return res.status(400).json({ message: 'Google email and ID are required' });
@@ -109,7 +110,7 @@ const googleAuth = async (req, res) => {
         googleId,
         avatar: avatar || '',
         isGoogleUser: true,
-        role: 'passenger',
+        role: role === 'conductor' ? 'conductor' : 'passenger',
       });
     }
 

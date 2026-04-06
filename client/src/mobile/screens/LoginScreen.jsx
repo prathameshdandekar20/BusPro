@@ -19,7 +19,10 @@ const LoginScreen = ({ login, signup, googleLogin }) => {
     setError('');
     setLoading(true);
     try {
-      const user = isSignup ? await signup(form) : await login({ email: form.email, password: form.password });
+      const emailToUse = form.email.trim().toLowerCase();
+      const user = isSignup 
+        ? await signup({ ...form, email: emailToUse, role: loginMode }) 
+        : await login({ email: emailToUse, password: form.password });
       navigate(user.role === 'conductor' ? '/conductor' : '/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || (isSignup ? 'Signup failed' : 'Login failed'));
@@ -35,6 +38,7 @@ const LoginScreen = ({ login, signup, googleLogin }) => {
       const user = await googleLogin({
         email: payload.email, name: payload.name,
         googleId: payload.sub, avatar: payload.picture,
+        role: loginMode,
       });
       navigate(user.role === 'conductor' ? '/conductor' : '/dashboard');
     } catch { setError('Google login failed'); }
@@ -56,8 +60,7 @@ const LoginScreen = ({ login, signup, googleLogin }) => {
         </div>
 
         {/* Login Mode Toggle — Passenger / Conductor */}
-        {!isSignup && (
-          <div className="m-tabs m-mb-24">
+        <div className="m-tabs m-mb-24">
             <button
               className={`m-tab ${loginMode === 'passenger' ? 'active' : ''}`}
               onClick={() => { setLoginMode('passenger'); setError(''); }}
@@ -70,8 +73,7 @@ const LoginScreen = ({ login, signup, googleLogin }) => {
             >
               <FiTruck size={12} style={{ marginRight: 4 }} /> Conductor
             </button>
-          </div>
-        )}
+        </div>
 
         {/* Conductor Info Card */}
         {loginMode === 'conductor' && !isSignup && (
