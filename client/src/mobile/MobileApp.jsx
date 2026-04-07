@@ -1,5 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { isNativeApp } from '../utils/platform';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import BottomNav from './components/BottomNav';
 import './MobileApp.css';
@@ -55,6 +57,44 @@ const Loading = () => (
 /* ── Main App ───────────────────────────────────────────── */
 const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleClientId }) => {
   const [splashDone, setSplashDone] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const APP_VERSION = '1.0.9'; // Client version
+
+  useEffect(() => {
+    if (!isNativeApp()) return;
+
+    const checkForUpdates = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/app-update`);
+        const data = await response.json();
+        if (data.latestVersion && data.latestVersion !== APP_VERSION) {
+          setUpdateInfo({
+            version: data.latestVersion,
+            downloadUrl: data.downloadUrl,
+            changelog: data.changelog || 'Bug fixes and improvements.',
+          });
+        }
+      } catch (err) {
+        console.warn('App update check failed:', err);
+      }
+    };
+    checkForUpdates();
+    const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleDownloadUpdate = () => {
+    if (!updateInfo?.downloadUrl) return;
+    setIsDownloading(true);
+    try {
+      window.open(updateInfo.downloadUrl, '_system');
+    } catch (err) {
+      window.location.href = updateInfo.downloadUrl;
+    }
+    setTimeout(() => setIsDownloading(false), 5000);
+  };
 
   if (!splashDone) return <SplashScreen onFinish={() => setSplashDone(true)} />;
   if (loading) return <Loading />;
@@ -63,6 +103,35 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
     <GoogleOAuthProvider clientId={googleClientId}>
       <Router>
         <div className="mobile-app">
+          {/* In-App Update Banner */}
+          <AnimatePresence>
+            {updateInfo && (
+              <motion.div
+                className="update-banner-toast"
+                initial={{ y: -100, x: '-50%', opacity: 0 }}
+                animate={{ y: 0, x: '-50%', opacity: 1 }}
+                exit={{ y: -100, x: '-50%', opacity: 0 }}
+                style={{ position: 'fixed', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 99999, width: '90%', maxWidth: '400px' }}
+              >
+                <div className="update-content">
+                  <span className="update-icon">🚀</span>
+                  <div className="update-text">
+                    <strong>Update v{updateInfo.version} Available!</strong>
+                    <span>{updateInfo.changelog} (Install APK after download)</span>
+                  </div>
+                </div>
+                <button
+                  className="update-btn-action"
+                  onClick={handleDownloadUpdate}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? 'Downloading...' : 'Download Update'}
+                </button>
+                <button className="update-btn-close" onClick={() => setUpdateInfo(null)}>✕</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <Suspense fallback={<Loading />}>
             <Routes>
               {/* Auth */}

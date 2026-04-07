@@ -565,6 +565,7 @@ const ConductorScreen = ({ user }) => {
                 <input className="m-input" placeholder="Via Route (optional)" value={createForm.route}
                   onChange={e => setCreateForm(p => ({ ...p, route: e.target.value }))} />
                 <button className="m-btn m-btn-lemon m-mt-8" onClick={handleCreate}>Create Bus</button>
+                <div style={{ height: 100 }} />
               </div>
             </motion.div>
           </div>
@@ -597,6 +598,7 @@ const ConductorScreen = ({ user }) => {
                 <button className="m-btn m-btn-dark m-btn-small" style={{ width: 'auto' }}
                   onClick={() => setShowMapSelector(null)}>Done</button>
               </div>
+              <div style={{ height: 100 }} />
             </motion.div>
           </div>
         )}
