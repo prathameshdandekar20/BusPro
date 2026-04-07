@@ -11,7 +11,7 @@ import './index.css';
 import './pages/CrystalLight.css';
 
 const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; // User should replace this
-const APP_VERSION = '1.0.9'; // Change this when you push a new client update
+const APP_VERSION = '1.0.10'; // Change this when you push a new client update
 
 // Lazy load pages for performance
 const Landing = lazy(() => import('./pages/Landing'));
