@@ -1,12 +1,21 @@
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import GlassCard from '../components/GlassCard';
 import { pageTransition, fadeInUp } from '../animations/variants';
 import './Legal.css';
 
 const LegalPage = () => {
-  const { type } = useParams();
+  const { type: paramType } = useParams();
+  const location = useLocation();
+  
+  // Detect type from URL pathname if params don't provide it (mobile routes)
+  const type = paramType || (() => {
+    const path = location.pathname;
+    if (path.includes('privacy')) return 'privacy';
+    if (path.includes('terms')) return 'terms';
+    return undefined;
+  })();
 
   useEffect(() => {
     window.scrollTo(0, 0);

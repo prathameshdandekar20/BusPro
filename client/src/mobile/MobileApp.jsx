@@ -11,6 +11,7 @@ const HomeScreen = lazy(() => import('./screens/HomeScreen'));
 const ActivityScreen = lazy(() => import('./screens/ActivityScreen'));
 const ProfileScreen = lazy(() => import('./screens/ProfileScreen'));
 const ConductorScreen = lazy(() => import('./screens/ConductorScreen'));
+const ConductorHomeScreen = lazy(() => import('./screens/ConductorHomeScreen'));
 const BusDetailScreen = lazy(() => import('./screens/BusDetailScreen'));
 const BookingScreen = lazy(() => import('./screens/BookingScreen'));
 const Settings = lazy(() => import('../pages/Settings'));
@@ -38,7 +39,7 @@ const SplashScreen = ({ onFinish }) => {
         <div className="m-splash-loader">
           <div className="m-splash-loader-bar" />
         </div>
-        <span className="m-splash-version">v1.0.10</span>
+        <span className="m-splash-version">v1.0.11</span>
       </div>
     </div>
   );
@@ -59,7 +60,7 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
   const [splashDone, setSplashDone] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const APP_VERSION = '1.0.10'; // Client version
+  const APP_VERSION = '1.0.11'; // Client version
 
   useEffect(() => {
     if (!isNativeApp()) return;
@@ -85,12 +86,27 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
     return () => clearInterval(interval);
   }, []);
 
-  const handleDownloadUpdate = () => {
+  const handleDownloadUpdate = async () => {
     if (!updateInfo?.downloadUrl) return;
     setIsDownloading(true);
     try {
-      window.open(updateInfo.downloadUrl, '_system');
+      // Try using the Capacitor Browser plugin to open in system browser
+      // which handles APK download + install prompt natively
+      const { Browser } = await import('@capacitor/browser').catch(() => ({}));
+      if (Browser?.open) {
+        await Browser.open({ url: updateInfo.downloadUrl, windowName: '_system' });
+      } else {
+        // Fallback: create a temporary link and trigger download
+        const a = document.createElement('a');
+        a.href = updateInfo.downloadUrl;
+        a.download = 'SmartBus.apk';
+        a.target = '_system';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     } catch (err) {
+      // Final fallback
       window.location.href = updateInfo.downloadUrl;
     }
     setTimeout(() => setIsDownloading(false), 5000);
@@ -141,9 +157,13 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
               } />
               <Route path="/signup" element={<Navigate to="/login" replace />} />
 
-              {/* Passenger */}
+              {/* Passenger / Conductor Home */}
               <Route path="/dashboard" element={
-                user ? <HomeScreen user={user} /> : <Navigate to="/login" replace />
+                user
+                  ? (user.role === 'conductor' || user.role === 'admin')
+                    ? <ConductorHomeScreen user={user} />
+                    : <HomeScreen user={user} />
+                  : <Navigate to="/login" replace />
               } />
               <Route path="/activity" element={
                 user ? <ActivityScreen user={user} /> : <Navigate to="/login" replace />

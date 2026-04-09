@@ -5,6 +5,7 @@ import { FiUser, FiMail, FiPhone, FiLogOut, FiChevronRight, FiSettings, FiShield
 
 const ProfileScreen = ({ user, logout }) => {
   const navigate = useNavigate();
+  const [showPhoneEdit, setShowPhoneEdit] = useState(false);
 
   return (
     <div className="mobile-screen">
@@ -24,37 +25,54 @@ const ProfileScreen = ({ user, logout }) => {
 
       {/* Details Cards */}
       <div className="m-flex m-flex-col m-gap-12 m-mb-24">
-        {[
-          { icon: <FiMail />, label: 'Email', value: user?.email || '—' },
-          { icon: <FiPhone />, label: 'Phone', value: user?.phone || 'Not set' },
-        ].map((item, i) => (
-          <div key={i} className="m-card m-flex m-items-center m-gap-12" style={{ padding: 16 }}>
-            <div className="m-stat-icon m-stat-icon-sky">{item.icon}</div>
-            <div style={{ flex: 1 }}>
-              <div className="m-label">{item.label}</div>
-              <div className="m-text m-mt-4">{item.value}</div>
-            </div>
+        {/* Email Card */}
+        <div className="m-card m-flex m-items-center m-gap-12" style={{ padding: 16 }}>
+          <div className="m-stat-icon m-stat-icon-sky"><FiMail /></div>
+          <div style={{ flex: 1 }}>
+            <div className="m-label">Email</div>
+            <div className="m-text m-mt-4">{user?.email || '—'}</div>
           </div>
-        ))}
+        </div>
+        
+        {/* Phone Card - Clickable, navigates to settings */}
+        <div className="m-card m-flex m-items-center m-gap-12" 
+          style={{ padding: 16, cursor: 'pointer' }}
+          onClick={() => navigate('/settings')}
+        >
+          <div className="m-stat-icon m-stat-icon-sky"><FiPhone /></div>
+          <div style={{ flex: 1 }}>
+            <div className="m-label">Phone</div>
+            <div className="m-text m-mt-4">{user?.phone || 'Not set'}</div>
+          </div>
+          <FiChevronRight style={{ color: 'var(--m-light-muted)' }} />
+        </div>
       </div>
 
-      {/* Quick Links */}
+      {/* Quick Links - App Theme Styled */}
       <div className="m-flex m-flex-col m-gap-8 m-mb-24">
-        {[
-          { label: 'Settings', icon: <FiSettings />, action: () => navigate('/settings') },
-          { label: 'Privacy Policy', icon: <FiShield />, action: () => navigate('/privacy-policy') },
-          { label: 'Terms of Service', icon: <FiFileText />, action: () => navigate('/terms') },
-        ].map((link, i) => (
-          <button key={i} onClick={link.action}
-            className="m-card-flat m-flex m-flex-between m-items-center m-w-full"
-            style={{ border: 'none', cursor: 'pointer', fontFamily: 'var(--m-font)' }}>
-            <span className="m-flex m-items-center m-gap-8">
-              <span style={{ color: 'var(--m-muted)' }}>{link.icon}</span>
-              <span className="m-text">{link.label}</span>
-            </span>
-            <FiChevronRight style={{ color: 'var(--m-muted)' }} />
-          </button>
-        ))}
+        <button className="m-profile-link-btn" onClick={() => navigate('/settings')}>
+          <span className="m-flex m-items-center m-gap-12">
+            <span className="m-profile-link-icon icon-settings"><FiSettings /></span>
+            <span className="m-profile-link-text">Settings</span>
+          </span>
+          <FiChevronRight className="m-profile-link-arrow" />
+        </button>
+
+        <button className="m-profile-link-btn" onClick={() => navigate('/privacy-policy')}>
+          <span className="m-flex m-items-center m-gap-12">
+            <span className="m-profile-link-icon icon-privacy"><FiShield /></span>
+            <span className="m-profile-link-text">Privacy Policy</span>
+          </span>
+          <FiChevronRight className="m-profile-link-arrow" />
+        </button>
+
+        <button className="m-profile-link-btn" onClick={() => navigate('/terms')}>
+          <span className="m-flex m-items-center m-gap-12">
+            <span className="m-profile-link-icon icon-terms"><FiFileText /></span>
+            <span className="m-profile-link-text">Terms of Service</span>
+          </span>
+          <FiChevronRight className="m-profile-link-arrow" />
+        </button>
       </div>
 
       {/* Logout */}
@@ -64,7 +82,7 @@ const ProfileScreen = ({ user, logout }) => {
 
       {/* App Version */}
       <div className="m-text-sm m-text-muted m-text-center m-mt-24" style={{ opacity: 0.6 }}>
-        SmartBus v1.0.8
+        SmartBus v1.0.11
       </div>
     </div>
   );

@@ -565,7 +565,7 @@ const ConductorScreen = ({ user }) => {
                 <input className="m-input" placeholder="Via Route (optional)" value={createForm.route}
                   onChange={e => setCreateForm(p => ({ ...p, route: e.target.value }))} />
                 <button className="m-btn m-btn-lemon m-mt-8" onClick={handleCreate}>Create Bus</button>
-                <div style={{ height: 100 }} />
+                <div style={{ height: 120 }} />
               </div>
             </motion.div>
           </div>

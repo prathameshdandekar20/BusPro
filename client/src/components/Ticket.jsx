@@ -29,6 +29,40 @@ const Ticket = ({ ride, user, onPrint, onClose }) => {
     }
   };
 
+  const handleSaveToDevice = async () => {
+    try {
+      const ticketEl = document.getElementById('printable-ticket');
+      if (!ticketEl) return;
+      
+      // Dynamic import html2canvas
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(ticketEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const pnr = ride?._id ? String(ride._id).substring(String(ride._id).length - 10).toUpperCase() : 'TICKET';
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `SmartBus_Ticket_${pnr}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch (e) {
+      console.error('Save failed', e);
+      // Fallback: try share
+      handlePrintOrShare();
+    }
+  };
+
   const formatDate = (date) => {
     return new Date(date).toLocaleString('en-IN', {
       day: '2-digit',
@@ -62,9 +96,14 @@ const Ticket = ({ ride, user, onPrint, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ticket-controls-header">
-          <button className="btn-print-action" onClick={handlePrintOrShare}>
-            <span>{isNativeApp() ? '📤' : '🖨️'}</span> {isNativeApp() ? 'Share / Save' : 'Print Ticket'}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-print-action" onClick={handlePrintOrShare}>
+              <span>{isNativeApp() ? '📤' : '🖨️'}</span> {isNativeApp() ? 'Share' : 'Print'}
+            </button>
+            <button className="btn-print-action" onClick={handleSaveToDevice} style={{ background: isNativeApp() ? '#111' : '#1a73e8' }}>
+              <span>💾</span> Save
+            </button>
+          </div>
           <button className="btn-close-ticket" onClick={onClose} aria-label="Close Ticket">✕ Close</button>
         </div>
 

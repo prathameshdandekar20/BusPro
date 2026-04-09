@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiHome, FiClock, FiUser, FiTruck } from 'react-icons/fi';
+import { FiHome, FiClock, FiUser, FiTruck, FiGrid } from 'react-icons/fi';
 
 const BottomNav = ({ isConductor }) => {
   const location = useLocation();
@@ -13,7 +13,7 @@ const BottomNav = ({ isConductor }) => {
 
   const conductorTabs = [
     { path: '/conductor', icon: <FiTruck />, label: 'My Fleet' },
-    { path: '/dashboard', icon: <FiHome />, label: 'Home' },
+    { path: '/dashboard', icon: <FiGrid />, label: 'Home' },
     { path: '/profile', icon: <FiUser />, label: 'Profile' },
   ];
 

@@ -931,7 +931,7 @@
   background: var(--m-white);
   border-radius: 28px 28px 0 0;
   padding: 28px 24px;
-  padding-bottom: calc(24px + var(--m-safe-bottom));
+  padding-bottom: calc(100px + var(--m-safe-bottom));
   overflow-y: auto;
   box-shadow: 0 -10px 60px rgba(0,0,0,0.1);
 }
@@ -1180,4 +1180,228 @@
 /* ==================== Scrollbar ==================== */
 .mobile-app::-webkit-scrollbar { width: 0; }
 .mobile-app { scrollbar-width: none; }
+
+/* ==================== Mobile Ticket Fullscreen ==================== */
+.mobile-app .ticket-modal-overlay {
+  padding: 0 !important;
+  z-index: 10002;
+}
+
+.mobile-app .ticket-container {
+  margin: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: 100% !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.mobile-app .ticket-scroll-area {
+  padding: 12px 0 !important;
+  background: #f4f5f7;
+}
+
+.mobile-app .ticket-page {
+  padding: 16px 14px !important;
+  min-height: auto !important;
+  font-size: 13px;
+}
+
+.mobile-app .ticket-controls-header {
+  padding: 10px 16px;
+  background: var(--m-dark);
+  border-bottom: none;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.mobile-app .btn-print-action {
+  background: var(--m-lemon);
+  color: var(--m-dark);
+  font-size: 12px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+}
+
+.mobile-app .btn-close-ticket {
+  background: rgba(255,255,255,0.15);
+  color: var(--m-white);
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 12px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.mobile-app .national-pride-header {
+  gap: 8px;
+  padding: 6px 0 10px;
+}
+
+.mobile-app .azadi-badge-img { flex: 0 0 60px; }
+.mobile-app .azadi-badge-img img { height: 40px; }
+.mobile-app .g20-badge-img { flex: 0 0 60px; }
+.mobile-app .g20-badge-img img { height: 45px; }
+.mobile-app .morth-logo-img { height: 50px; }
+.mobile-app .goi-text { font-size: 0.7rem; }
+.mobile-app .ministry-text { font-size: 0.55rem; }
+.mobile-app .ers-main-title h1 { font-size: 0.9rem; }
+.mobile-app .ers-main-title p { font-size: 0.6rem; }
+.mobile-app .ticket-info-grid { grid-template-columns: 1fr; gap: 8px; padding: 10px; }
+.mobile-app .info-line { font-size: 0.75rem; }
+.mobile-app .journey-summary-bar { gap: 16px; padding: 8px; }
+.mobile-app .j-city { font-size: 0.95rem; }
+.mobile-app .j-arrow { font-size: 1rem; }
+.mobile-app .passenger-table-official th,
+.mobile-app .passenger-table-official td { padding: 5px 4px; font-size: 0.65rem; }
+.mobile-app .fare-main-line { font-size: 0.85rem; }
+.mobile-app .fare-price { font-size: 1rem; }
+.mobile-app .pride-watermark { font-size: 2.5rem; }
+.mobile-app .page-divider { margin: 20px 0; }
+
+/* ==================== Profile Link Buttons Themed ==================== */
+.mobile-app .m-profile-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--m-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--m-glass-border);
+  border-radius: var(--m-radius-sm);
+  cursor: pointer;
+  font-family: var(--m-font);
+  color: var(--m-dark);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mobile-app .m-profile-link-btn:active {
+  transform: scale(0.97);
+}
+
+.mobile-app .m-profile-link-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.mobile-app .m-profile-link-icon.icon-settings { background: rgba(234,243,74,0.2); color: var(--m-dark); }
+.mobile-app .m-profile-link-icon.icon-privacy { background: rgba(52,211,153,0.15); color: #059669; }
+.mobile-app .m-profile-link-icon.icon-terms { background: rgba(220,238,240,0.5); color: var(--m-dark); }
+
+.mobile-app .m-profile-link-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--m-dark);
+}
+
+.mobile-app .m-profile-link-arrow {
+  color: var(--m-light-muted);
+  font-size: 16px;
+}
+
+/* ==================== Conductor Dashboard Home ==================== */
+.m-conductor-dash-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.m-conductor-dash-stat {
+  background: var(--m-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--m-glass-border);
+  border-radius: var(--m-radius-sm);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.m-conductor-dash-stat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+  pointer-events: none;
+}
+
+.m-conductor-dash-stat .stat-emoji {
+  font-size: 28px;
+}
+
+.m-conductor-dash-stat .stat-value {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--m-dark);
+  line-height: 1;
+}
+
+.m-conductor-dash-stat .stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--m-muted);
+}
+
+.m-conductor-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.m-quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--m-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--m-glass-border);
+  border-radius: var(--m-radius-sm);
+  cursor: pointer;
+  font-family: var(--m-font);
+  color: var(--m-dark);
+  transition: transform 0.15s ease;
+}
+
+.m-quick-action-btn:active {
+  transform: scale(0.97);
+}
+
+.m-quick-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.m-quick-action-icon.act-fleet { background: rgba(234,243,74,0.2); }
+.m-quick-action-icon.act-track { background: rgba(52,211,153,0.15); }
+.m-quick-action-icon.act-bookings { background: rgba(220,238,240,0.5); }
+.m-quick-action-icon.act-reviews { background: rgba(248,113,113,0.1); }
+
+.m-quick-action-info { flex: 1; }
+.m-quick-action-title { font-size: 14px; font-weight: 800; }
+.m-quick-action-desc { font-size: 11px; font-weight: 600; color: var(--m-muted); margin-top: 2px; }
 
