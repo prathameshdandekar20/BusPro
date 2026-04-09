@@ -14,8 +14,8 @@ const ConductorScreen = lazy(() => import('./screens/ConductorScreen'));
 const ConductorHomeScreen = lazy(() => import('./screens/ConductorHomeScreen'));
 const BusDetailScreen = lazy(() => import('./screens/BusDetailScreen'));
 const BookingScreen = lazy(() => import('./screens/BookingScreen'));
-const Settings = lazy(() => import('../pages/Settings'));
-const LegalPage = lazy(() => import('../pages/LegalPage'));
+const MobileSettingsScreen = lazy(() => import('./screens/MobileSettingsScreen'));
+const MobileLegalScreen = lazy(() => import('./screens/MobileLegalScreen'));
 
 /* ── Branded Splash Screen ─────────────────────────────── */
 const SplashScreen = ({ onFinish }) => {
@@ -39,7 +39,7 @@ const SplashScreen = ({ onFinish }) => {
         <div className="m-splash-loader">
           <div className="m-splash-loader-bar" />
         </div>
-        <span className="m-splash-version">v1.0.11</span>
+        <span className="m-splash-version">v1.0.12</span>
       </div>
     </div>
   );
@@ -60,7 +60,7 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
   const [splashDone, setSplashDone] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const APP_VERSION = '1.0.11'; // Client version
+  const APP_VERSION = '1.0.12'; // Client version
 
   useEffect(() => {
     if (!isNativeApp()) return;
@@ -83,7 +83,32 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
     };
     checkForUpdates();
     const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
-    return () => clearInterval(interval);
+
+    // Hardware Back Button Handler
+    let backListener;
+    const setupBackButton = async () => {
+      try {
+        const { App } = await import('@capacitor/app');
+        backListener = await App.addListener('backButton', () => {
+          const path = window.location.pathname;
+          // If on a root page, let the app close
+          if (path === '/' || path === '/dashboard' || path === '/conductor' || path === '/login') {
+            App.exitApp();
+          } else {
+            // Otherwise, navigate back in the React Router history
+            window.history.back();
+          }
+        });
+      } catch (err) {
+        console.warn('Capacitor App plugin not available', err);
+      }
+    };
+    setupBackButton();
+
+    return () => {
+      clearInterval(interval);
+      if (backListener) backListener.remove();
+    };
   }, []);
 
   const handleDownloadUpdate = async () => {
@@ -187,10 +212,10 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
 
               {/* Settings & Legal */}
               <Route path="/settings" element={
-                user ? <Settings user={user} /> : <Navigate to="/login" replace />
+                user ? <MobileSettingsScreen /> : <Navigate to="/login" replace />
               } />
-              <Route path="/privacy-policy" element={<LegalPage />} />
-              <Route path="/terms" element={<LegalPage />} />
+              <Route path="/privacy-policy" element={<MobileLegalScreen />} />
+              <Route path="/terms" element={<MobileLegalScreen />} />
 
               {/* Landing → redirect to login or dashboard */}
               <Route path="/" element={
