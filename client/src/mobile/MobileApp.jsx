@@ -39,7 +39,7 @@ const SplashScreen = ({ onFinish }) => {
         <div className="m-splash-loader">
           <div className="m-splash-loader-bar" />
         </div>
-        <span className="m-splash-version">v1.0.12</span>
+        <span className="m-splash-version">v1.0.13</span>
       </div>
     </div>
   );
@@ -60,7 +60,7 @@ const MobileApp = ({ user, loading, login, signup, googleLogin, logout, googleCl
   const [splashDone, setSplashDone] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const APP_VERSION = '1.0.12'; // Client version
+  const APP_VERSION = '1.0.13'; // Client version
 
   useEffect(() => {
     if (!isNativeApp()) return;

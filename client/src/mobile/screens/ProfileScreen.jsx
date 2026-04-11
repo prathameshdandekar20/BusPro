@@ -82,7 +82,7 @@ const ProfileScreen = ({ user, logout }) => {
 
       {/* App Version */}
       <div className="m-text-sm m-text-muted m-text-center m-mt-24" style={{ opacity: 0.6 }}>
-        SmartBus v1.0.11
+        SmartBus v1.0.13
       </div>
     </div>
   );
